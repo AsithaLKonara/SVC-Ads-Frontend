@@ -78,9 +78,10 @@ const getCategoryData = (slug: string) => {
 interface BrowseLayoutProps {
   category?: string;
   subcategory?: string;
+  searchQuery?: string;
 }
 
-export default function BrowseLayout({ category, subcategory }: BrowseLayoutProps) {
+export default function BrowseLayout({ category, subcategory, searchQuery }: BrowseLayoutProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -92,7 +93,15 @@ export default function BrowseLayout({ category, subcategory }: BrowseLayoutProp
 
   const formattedCategory = formatTitle(category);
   const formattedSubcategory = formatTitle(subcategory);
-  const pageTitle = formattedSubcategory ? `${formattedSubcategory} in ${formattedCategory}` : formattedCategory ? `${formattedCategory} Ads` : "All Ads";
+  
+  let pageTitle = "All Ads";
+  if (searchQuery) {
+    pageTitle = `Search: "${searchQuery}"`;
+  } else if (formattedSubcategory) {
+    pageTitle = `${formattedSubcategory} in ${formattedCategory}`;
+  } else if (formattedCategory) {
+    pageTitle = `${formattedCategory} Ads`;
+  }
   
   const catData = category ? getCategoryData(category.toLowerCase()) : null;
 
@@ -214,14 +223,14 @@ export default function BrowseLayout({ category, subcategory }: BrowseLayoutProp
           {/* Results Area */}
           <div className="flex-1 min-w-0">
             
-            {/* Page Header (Generic) */}
+            {/* Page Header (Generic or Search) */}
             {!category && (
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-2">
                 <div>
                   <h1 className="font-heading text-2xl font-bold text-foreground">{pageTitle}</h1>
                   <p className="text-sm text-foreground/60">Showing 1 - 12 of 12,450 results</p>
                 </div>
-                <SortAndToggle viewMode={viewMode} setViewMode={setViewMode} />
+                <SortAndToggle viewMode={viewMode} setViewMode={setViewMode} isSearch={!!searchQuery} />
               </div>
             )}
 
@@ -229,7 +238,7 @@ export default function BrowseLayout({ category, subcategory }: BrowseLayoutProp
             {category && (
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-2">
                 <p className="text-sm font-semibold text-foreground/60">Showing 1 - 12 of 3,240 results</p>
-                <SortAndToggle viewMode={viewMode} setViewMode={setViewMode} />
+                <SortAndToggle viewMode={viewMode} setViewMode={setViewMode} isSearch={!!searchQuery} />
               </div>
             )}
 
@@ -288,14 +297,17 @@ export default function BrowseLayout({ category, subcategory }: BrowseLayoutProp
 }
 
 // Extracted helper for layout cleanliness
-function SortAndToggle({ viewMode, setViewMode }: { viewMode: "grid" | "list", setViewMode: (mode: "grid"| "list") => void }) {
+function SortAndToggle({ viewMode, setViewMode, isSearch }: { viewMode: "grid" | "list", setViewMode: (mode: "grid"| "list") => void, isSearch?: boolean }) {
   return (
     <div className="flex items-center gap-4 shrink-0">
-      <select className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
-        <option value="newest">Sort by: Newest</option>
-        <option value="price-asc">Price: Low to High</option>
-        <option value="price-desc">Price: High to Low</option>
-        <option value="relevance">Relevance</option>
+      <select 
+        className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+        defaultValue={isSearch ? "relevance" : "newest"}
+      >
+        <option value="relevance" className="bg-background">Sort by: Relevance</option>
+        <option value="newest" className="bg-background">Sort by: Newest</option>
+        <option value="price-asc" className="bg-background">Price: Low to High</option>
+        <option value="price-desc" className="bg-background">Price: High to Low</option>
       </select>
 
       <div className="hidden items-center gap-1 rounded-lg border border-border bg-card p-1 sm:flex">
