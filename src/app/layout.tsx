@@ -13,8 +13,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Yaka Ads | Single Vendor Classifieds",
-  description: "Find what you need. Sell what you don't.",
+  title: "LAKLAND REALITY",
+  description: "Commercially Valuable Lands in Sri Lanka. Invest Today. Build Tomorrow.",
 };
 
 export default function RootLayout({

@@ -55,7 +55,7 @@ export default function UsersPage() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium text-slate-900">Admin User</span>
-                      <span className="text-xs text-slate-500">admin@yaka.lk</span>
+                      <span className="text-xs text-slate-500">laklandreality@gmail.com</span>
                     </div>
                   </div>
                 </td>
@@ -86,7 +86,7 @@ export default function UsersPage() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-medium text-slate-900">Moderator One</span>
-                      <span className="text-xs text-slate-500">mod1@yaka.lk</span>
+                      <span className="text-xs text-slate-500">mod1@gmail.com</span>
                     </div>
                   </div>
                 </td>

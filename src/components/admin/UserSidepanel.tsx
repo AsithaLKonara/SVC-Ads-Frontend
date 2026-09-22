@@ -46,7 +46,7 @@ export default function UserSidepanel({ isOpen, onClose, mode, user }: UserSidep
               <input
                 type="email"
                 disabled={mode === "view"}
-                placeholder="e.g. john@yaka.lk"
+                placeholder="e.g. john@gmail.com"
                 className="block w-full rounded-md border border-slate-300 py-2 pl-10 pr-3 text-sm placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
               />
             </div>

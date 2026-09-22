@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   LayoutDashboard, 
   Users, 
@@ -24,8 +25,13 @@ export default function DashboardLayout({
       <aside className="fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200 bg-white">
         <div className="flex h-16 items-center border-b border-slate-200 px-6">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-lg font-bold text-white">
-              Y
+            <div className="relative h-8 w-8">
+              <Image 
+                src="/logo.JPG" 
+                alt="LAKLAND REALITY" 
+                fill
+                className="rounded-lg object-cover"
+              />
             </div>
             <span className="text-xl font-bold tracking-tight text-slate-900">
               Admin Portal

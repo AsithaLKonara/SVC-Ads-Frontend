@@ -21,7 +21,7 @@ export default function LoginPage() {
               Admin Portal
             </h1>
             <p className="max-w-md text-lg text-brand-100">
-              Securely manage advertisements, categories, and platform settings for Yaka.lk.
+              Securely manage advertisements, categories, and platform settings for LAKLAND REALITY.
             </p>
           </div>
         </div>
@@ -47,7 +47,7 @@ export default function LoginPage() {
                   <input
                     id="email"
                     type="email"
-                    placeholder="admin@yaka.lk"
+                    placeholder="laklandreality@gmail.com"
                     className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                     required
                   />

@@ -19,17 +19,54 @@ export default function Footer() {
           
           {/* Brand Col */}
           <div className="col-span-2 lg:col-span-2">
-            <Link href="/" className="mb-6 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white font-bold text-xl">
-                Y
+            <Link href="/" className="mb-6 flex items-center gap-3">
+              <div className="relative h-10 w-10">
+                <Image 
+                  src="/logo.JPG" 
+                  alt="LAKLAND REALITY" 
+                  fill
+                  className="rounded-lg object-cover"
+                />
               </div>
               <span className="text-2xl font-heading font-bold text-white tracking-tight">
-                Yaka.lk
+                LAKLAND REALITY
               </span>
             </Link>
-            <p className="mb-6 max-w-sm text-sm">
-              Sri Lanka's premier classifieds marketplace. Find what you need, sell what you don't. Fast, secure, and easy to use.
-            </p>
+            <div className="mb-6 max-w-sm text-sm space-y-2">
+              <p className="font-semibold text-white">Commercially Valuable Lands in Sri Lanka</p>
+              <ul className="space-y-1">
+                <li className="flex items-center gap-2">
+                  <svg className="text-brand-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg> 
+                  Strategic Locations
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="text-brand-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg> 
+                  Clear & Secure Land Ownership
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="text-brand-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg> 
+                  Invest Today. Build Tomorrow.
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="text-brand-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg> 
+                  Your Land. Your Future.
+                </li>
+              </ul>
+            </div>
+            <div className="mb-6 flex flex-col gap-2 text-sm text-gray-400">
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Always open</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>Panadura, Sri Lanka, 12500</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <a href="mailto:laklandreality@gmail.com" className="hover:text-white transition-colors">laklandreality@gmail.com</a>
+              </div>
+            </div>
             {/* Social Links */}
             <div className="flex gap-4">
               <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-900 text-gray-400 hover:bg-brand-500 hover:text-white transition-colors">
@@ -75,7 +112,7 @@ export default function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-gray-800 pt-8 sm:flex-row">
           <p className="text-xs">
-            © {new Date().getFullYear()} Yaka.lk. All rights reserved.
+            © {new Date().getFullYear()} LAKLAND REALITY. All rights reserved.
           </p>
           <div className="flex gap-4">
             <Link href="/terms" className="text-xs hover:text-white transition-colors">Terms</Link>

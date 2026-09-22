@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
@@ -19,12 +20,16 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white font-bold text-xl">
-            Y
-          </div>
-          <span className="text-xl font-heading font-bold text-foreground tracking-tight">
-            Yaka.lk
+        <Link href="/" className="flex items-center gap-3">
+          <Image 
+            src="/logo.JPG" 
+            alt="LAKLAND REALITY" 
+            width={40} 
+            height={40} 
+            className="rounded-lg object-cover"
+          />
+          <span className="text-xl font-heading font-bold text-foreground tracking-tight hidden sm:block">
+            LAKLAND REALITY
           </span>
         </Link>
 

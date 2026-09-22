@@ -39,7 +39,7 @@ export default function HowItWorks() {
           How it works
         </h2>
         <p className="mx-auto mb-16 max-w-2xl text-lg text-white/80">
-          Buying and selling on Yaka.lk is simpler and safer than ever before. Just follow these three easy steps.
+          Buying and selling on LAKLAND REALITY is simpler and safer than ever before. Just follow these three easy steps.
         </p>
 
         <div className="grid grid-cols-1 gap-12 md:grid-cols-3 relative">

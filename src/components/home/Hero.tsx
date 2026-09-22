@@ -59,14 +59,14 @@ export default function Hero() {
 
       <div className="container relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 text-center sm:px-6 lg:px-8">
         <span className="mb-4 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm font-medium text-white backdrop-blur-md">
-          Sri Lanka's Premium Marketplace
+          Commercially Valuable Lands in Sri Lanka
         </span>
         <h1 className="mb-6 font-heading text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-          Find what you need. <br className="hidden sm:inline" />
-          <span className="text-brand-400">Sell what you don't.</span>
+          Invest Today. <br className="hidden sm:inline" />
+          <span className="text-brand-400">Build Tomorrow.</span>
         </h1>
         <p className="mb-10 max-w-2xl text-lg text-white/80 sm:text-xl">
-          The safest, most trusted platform to buy and sell vehicles, properties, electronics, and more across Sri Lanka.
+          Your Land. Your Future. Strategic Locations. Clear & Secure Land Ownership.
         </p>
 
         {/* Unified Search Box */}
