@@ -6,6 +6,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Category } from "@/services/categoryService";
 
+import { getDistricts } from "sri-lanka-postal-locations";
+
+const districts = getDistricts().map(d => d.name_en).sort((a, b) => a.localeCompare(b));
+
 export default function Hero({ categories = [] }: { categories?: Category[] }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -122,10 +126,9 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
                 className="w-full appearance-none rounded-xl bg-transparent py-3 pl-12 pr-10 text-sm text-foreground outline-none transition-all cursor-pointer hover:bg-foreground/5 focus:bg-transparent"
               >
                 <option value="" className="bg-background">Entire Sri Lanka</option>
-                <option value="colombo" className="bg-background">Colombo</option>
-                <option value="kandy" className="bg-background">Kandy</option>
-                <option value="galle" className="bg-background">Galle</option>
-                <option value="kurunegala" className="bg-background">Kurunegala</option>
+                {districts.map(dist => (
+                  <option key={dist} value={dist.toLowerCase()} className="bg-background">{dist}</option>
+                ))}
               </select>
               <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-foreground/50">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>

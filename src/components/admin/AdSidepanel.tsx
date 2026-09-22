@@ -9,17 +9,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Category } from "@/services/categoryService";
 import { adService, Ad } from "@/services/adService";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 
-// Static districts and cities
-const DISTRICTS: Record<string, string[]> = {
-  Colombo: ["Colombo 1", "Colombo 2", "Dehiwala", "Nugegoda", "Maharagama", "Mount Lavinia"],
-  Gampaha: ["Gampaha", "Negombo", "Kelaniya", "Kadawatha", "Wattala"],
-  Kandy: ["Kandy City", "Peradeniya", "Katugastota", "Gampola"],
-  Galle: ["Galle City", "Ambalangoda", "Hikkaduwa", "Elpitiya"],
-  Kurunegala: ["Kurunegala City", "Kuliyapitiya", "Narammala", "Wariyapola"],
-};
+import { getDistricts, getCitiesByDistrictName } from "sri-lanka-postal-locations";
 
-const districtOptions = Object.keys(DISTRICTS).map(d => ({ value: d, label: d }));
+const districtOptions = getDistricts()
+  .map(d => ({ value: d.name_en, label: d.name_en }))
+  .sort((a, b) => a.label.localeCompare(b.label));
 
 const adSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -27,12 +23,12 @@ const adSchema = z.object({
   price: z.number().min(0, "Price must be positive"),
   condition: z.string().optional(),
   images: z.array(z.string()).max(5, "Maximum 5 images allowed").optional(),
-  category: z.object({ value: z.string(), label: z.string() }).nullable(),
+  category: z.object({ value: z.string(), label: z.string(), original: z.any().optional() }).nullable(),
   district: z.object({ value: z.string(), label: z.string() }).nullable(),
   city: z.object({ value: z.string(), label: z.string() }).nullable(),
   isFeatured: z.boolean(),
   contactPhone: z.string().optional(),
-  attributes: z.record(z.any()).optional(),
+  attributes: z.record(z.string(), z.any()).optional(),
   status: z.enum(["ACTIVE", "INACTIVE"]),
 }).refine(data => data.category !== null, {
   message: "Category is required",
@@ -87,20 +83,13 @@ export default function AdSidepanel({
 
   const cityOptions = useMemo(() => {
     if (!selectedDistrict) return [];
-    const cities = DISTRICTS[selectedDistrict.value] || [];
-    return cities.map(c => ({ value: c, label: c }));
+    const cities = getCitiesByDistrictName(selectedDistrict.value) || [];
+    return cities
+      .map((c: any) => ({ value: c.name_en, label: c.name_en }))
+      .sort((a: any, b: any) => a.label.localeCompare(b.label));
   }, [selectedDistrict]);
 
-  // When district changes, clear city if it's no longer valid
-  useEffect(() => {
-    const currentCity = watch("city");
-    if (currentCity && selectedDistrict) {
-      const validCities = DISTRICTS[selectedDistrict.value] || [];
-      if (!validCities.includes(currentCity.value)) {
-        setValue("city", null);
-      }
-    }
-  }, [selectedDistrict, watch, setValue]);
+  // Removed useEffect for city clearing. Handled explicitly in District onChange.
 
   const categoryOptions = useMemo(() => {
     return categories.map(cat => ({
@@ -345,6 +334,10 @@ export default function AdSidepanel({
                   render={({ field }) => (
                     <Select
                       {...field}
+                      onChange={(val) => {
+                        field.onChange(val);
+                        setValue("city", null);
+                      }}
                       options={districtOptions}
                       isClearable
                       isDisabled={mode === "view" || isSubmitting}
@@ -362,14 +355,15 @@ export default function AdSidepanel({
                   name="city"
                   control={control}
                   render={({ field }) => (
-                    <Select
-                      {...field}
-                      options={cityOptions}
-                      isClearable
-                      isDisabled={!selectedDistrict || mode === "view" || isSubmitting}
-                      placeholder="Select city..."
-                      styles={customSelectStyles}
-                    />
+                  <CreatableSelect
+                    {...field}
+                    options={cityOptions}
+                    isClearable
+                    isDisabled={!selectedDistrict || mode === "view" || isSubmitting}
+                    placeholder="Select or type city..."
+                    styles={customSelectStyles}
+                    formatCreateLabel={(inputValue) => `Add "${inputValue}"`}
+                  />
                   )}
                 />
                 {errors.city && <p className="mt-1 text-xs text-red-500">{errors.city.message}</p>}

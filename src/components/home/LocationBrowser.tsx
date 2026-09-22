@@ -1,44 +1,29 @@
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { adService } from "@/services/adService";
 
-const locations = [
-  {
-    name: "Colombo",
-    adsCount: "25,430 Ads",
-    image: "https://images.unsplash.com/photo-1589136777351-fdc9c9cb15f4?auto=format&fit=crop&w=800&q=80",
-    colSpan: "col-span-1 sm:col-span-2 lg:col-span-2",
-  },
-  {
-    name: "Kandy",
-    adsCount: "8,210 Ads",
-    image: "https://images.unsplash.com/photo-1586523992293-8472481358b5?auto=format&fit=crop&w=800&q=80",
-    colSpan: "col-span-1 lg:col-span-1",
-  },
-  {
-    name: "Galle",
-    adsCount: "5,340 Ads",
-    image: "https://images.unsplash.com/photo-1590454794696-224c3e80062b?auto=format&fit=crop&w=800&q=80",
-    colSpan: "col-span-1 lg:col-span-1",
-  },
-  {
-    name: "Kurunegala",
-    adsCount: "4,120 Ads",
-    image: "https://images.unsplash.com/photo-1625721111613-2d2f7035ce4a?auto=format&fit=crop&w=800&q=80",
-    colSpan: "col-span-1 sm:col-span-2 lg:col-span-2",
-  },
-];
+export default async function LocationBrowser() {
+  let locationStats: { district: string; count: number }[] = [];
+  try {
+    // Only take top 6 locations for the browser grid
+    locationStats = await adService.getLocationStats();
+    locationStats = locationStats.slice(0, 6);
+  } catch (error) {
+    console.error("Failed to fetch location stats:", error);
+    // Fallback gracefully
+  }
 
-export default function LocationBrowser() {
+  if (locationStats.length === 0) return null;
+
   return (
-    <section className="py-20 bg-background">
+    <section className="py-20 bg-slate-50">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <h2 className="mb-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="mb-2 font-heading text-3xl font-bold text-slate-900 sm:text-4xl">
               Browse by Location
             </h2>
-            <p className="text-foreground/60 max-w-2xl text-lg">
+            <p className="text-slate-600 max-w-2xl text-lg">
               Find exactly what you need in your neighborhood or across the country.
             </p>
           </div>
@@ -51,29 +36,23 @@ export default function LocationBrowser() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {locations.map((loc) => (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {locationStats.map((loc) => (
             <Link
-              key={loc.name}
-              href={`/ads?location=${loc.name.toLowerCase()}`}
-              className={`group relative flex h-64 flex-col justify-end overflow-hidden rounded-2xl ${loc.colSpan}`}
+              key={loc.district}
+              href={`/ads?location=${loc.district.toLowerCase()}`}
+              className="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-md"
             >
-              <div className="absolute inset-0 z-0">
-                <Image
-                  src={loc.image}
-                  alt={loc.name}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
               </div>
               
-              <div className="relative z-10 p-6">
-                <h3 className="mb-1 font-heading text-2xl font-bold text-white">
-                  {loc.name}
+              <div className="text-center">
+                <h3 className="font-heading text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors">
+                  {loc.district}
                 </h3>
-                <p className="text-sm font-medium text-white/80">
-                  {loc.adsCount}
+                <p className="mt-1 text-sm font-medium text-slate-500">
+                  {loc.count.toLocaleString()} Ads
                 </p>
               </div>
             </Link>
