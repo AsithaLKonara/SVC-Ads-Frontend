@@ -1,8 +1,58 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleDemoLogin = () => {
+    setEmail("admin@laklandreality.com");
+    setPassword("admin123");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // In the future, this URL should probably be an environment variable.
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to login");
+      }
+
+      // We are using JWT. Store the token in localStorage for client-side access
+      // and in a cookie so middleware can read it.
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Strict`;
+      
+      // Redirect to dashboard
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -38,7 +88,27 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <form className="mt-8 space-y-6">
+            {/* Demo Credentials Alert */}
+            <div 
+              onClick={handleDemoLogin}
+              className="mt-4 cursor-pointer rounded-xl border border-brand-200 bg-brand-50 p-4 transition-colors hover:bg-brand-100"
+            >
+              <div className="flex items-center gap-3 text-brand-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <div className="text-sm">
+                  <span className="block font-semibold">Demo Admin Credentials</span>
+                  <span className="block opacity-90">Click this box to fill in the form instantly.</span>
+                  <span className="mt-1 block font-mono text-xs opacity-80">admin@laklandreality.com / admin123</span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+              {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="email" className="text-sm font-medium text-foreground">
@@ -47,6 +117,8 @@ export default function LoginPage() {
                   <input
                     id="email"
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="laklandreality@gmail.com"
                     className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                     required
@@ -62,6 +134,8 @@ export default function LoginPage() {
                   <input
                     id="password"
                     type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                     required
@@ -71,9 +145,10 @@ export default function LoginPage() {
 
               <button 
                 type="submit"
-                className="flex w-full justify-center rounded-xl bg-brand-600 px-4 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg active:scale-[0.98]"
+                disabled={isLoading}
+                className="flex w-full justify-center rounded-xl bg-brand-600 px-4 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg active:scale-[0.98] disabled:opacity-70 disabled:hover:translate-y-0"
               >
-                Sign in to Dashboard
+                {isLoading ? "Signing in..." : "Sign in to Dashboard"}
               </button>
             </form>
           </div>
