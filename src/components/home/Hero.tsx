@@ -4,8 +4,9 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Category } from "@/services/categoryService";
 
-export default function Hero() {
+export default function Hero({ categories = [] }: { categories?: Category[] }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("");
@@ -99,10 +100,9 @@ export default function Hero() {
                 className="w-full appearance-none rounded-xl bg-transparent py-3 pl-12 pr-10 text-sm text-foreground outline-none transition-all cursor-pointer hover:bg-foreground/5 focus:bg-transparent"
               >
                 <option value="" className="bg-background">All Categories</option>
-                <option value="vehicles" className="bg-background">Vehicles</option>
-                <option value="properties" className="bg-background">Properties</option>
-                <option value="electronics" className="bg-background">Electronics</option>
-                <option value="furniture" className="bg-background">Home & Furniture</option>
+                {categories.filter(c => !c.parentId).map(cat => (
+                  <option key={cat.id} value={cat.slug} className="bg-background">{cat.name}</option>
+                ))}
               </select>
               <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-foreground/50">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>

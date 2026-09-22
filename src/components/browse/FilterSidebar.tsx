@@ -1,8 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import { Category } from "@/services/categoryService";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
-export default function FilterSidebar({ onClose }: { onClose?: () => void }) {
+export default function FilterSidebar({ onClose, categories = [] }: { onClose?: () => void, categories?: Category[] }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  
+  const currentCategory = searchParams.get('category') || '';
+  
   // Simple toggle states for accordion
   const [openSection, setOpenSection] = useState<string>("category");
 
@@ -10,7 +18,23 @@ export default function FilterSidebar({ onClose }: { onClose?: () => void }) {
     setOpenSection(openSection === section ? "" : section);
   };
 
-  const categories = ["Vehicles", "Properties", "Electronics", "Furniture", "Services", "Jobs", "Fashion"];
+  const handleCategoryChange = (slug: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (slug) {
+      params.set('category', slug);
+    } else {
+      params.delete('category');
+    }
+    
+    // Check if we are on a specific category route rather than /search or /ads
+    if (pathname.startsWith('/') && pathname !== '/ads' && pathname !== '/search' && pathname !== '/') {
+        // If we are on /[category], we should probably navigate there directly instead of setting query param
+        router.push(`/${slug}`);
+    } else {
+        router.push(`${pathname}?${params.toString()}`);
+    }
+  };
+
   const locations = ["Colombo", "Kandy", "Galle", "Kurunegala", "Gampaha", "Matara"];
 
   return (
@@ -40,15 +64,43 @@ export default function FilterSidebar({ onClose }: { onClose?: () => void }) {
           
           {openSection === "category" && (
             <div className="mt-4 flex flex-col gap-2">
-              {categories.map((cat) => (
-                <label key={cat} className="flex items-center gap-3 group cursor-pointer">
-                  <div className="relative flex h-5 w-5 items-center justify-center rounded border border-border bg-card group-hover:border-brand-500 transition-colors">
-                    <input type="radio" name="category" value={cat} className="peer sr-only" />
-                    <div className="h-2.5 w-2.5 rounded-sm bg-brand-500 opacity-0 peer-checked:opacity-100 transition-opacity" />
-                  </div>
-                  <span className="text-sm text-foreground/80 group-hover:text-foreground">{cat}</span>
-                </label>
-              ))}
+              {/* All Categories Option */}
+              <label className="flex items-center gap-3 group cursor-pointer">
+                <div className="relative flex h-5 w-5 items-center justify-center rounded border border-border bg-card group-hover:border-brand-500 transition-colors">
+                  <input 
+                    type="radio" 
+                    name="category" 
+                    value="" 
+                    checked={!currentCategory && pathname === '/ads'}
+                    onChange={() => handleCategoryChange('')} 
+                    className="peer sr-only" 
+                  />
+                  <div className="h-2.5 w-2.5 rounded-sm bg-brand-500 opacity-0 peer-checked:opacity-100 transition-opacity" />
+                </div>
+                <span className="text-sm text-foreground/80 group-hover:text-foreground">All Categories</span>
+              </label>
+
+              {categories.filter(c => !c.parentId).map((cat) => {
+                // Check if current route is exactly this category
+                const isSelected = currentCategory === cat.slug || pathname.includes(`/${cat.slug}`);
+                
+                return (
+                  <label key={cat.id} className="flex items-center gap-3 group cursor-pointer">
+                    <div className="relative flex h-5 w-5 items-center justify-center rounded border border-border bg-card group-hover:border-brand-500 transition-colors">
+                      <input 
+                        type="radio" 
+                        name="category" 
+                        value={cat.slug} 
+                        checked={isSelected}
+                        onChange={() => handleCategoryChange(cat.slug)}
+                        className="peer sr-only" 
+                      />
+                      <div className="h-2.5 w-2.5 rounded-sm bg-brand-500 opacity-0 peer-checked:opacity-100 transition-opacity" />
+                    </div>
+                    <span className="text-sm text-foreground/80 group-hover:text-foreground">{cat.name}</span>
+                  </label>
+                );
+              })}
             </div>
           )}
         </div>

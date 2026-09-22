@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Navbar from "@/components/home/Navbar";
-import Footer from "@/components/home/Footer";
 import FilterSidebar from "@/components/browse/FilterSidebar";
 import AdCard from "@/components/ui/AdCard";
 import Link from "next/link";
+import { Category } from "@/services/categoryService";
 
 // Mock Data for Ads Page
 const mockAds = Array.from({ length: 12 }).map((_, i) => ({
@@ -79,9 +78,10 @@ interface BrowseLayoutProps {
   category?: string;
   subcategory?: string;
   searchQuery?: string;
+  categories?: Category[];
 }
 
-export default function BrowseLayout({ category, subcategory, searchQuery }: BrowseLayoutProps) {
+export default function BrowseLayout({ category, subcategory, searchQuery, categories = [] }: BrowseLayoutProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -107,8 +107,6 @@ export default function BrowseLayout({ category, subcategory, searchQuery }: Bro
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <Navbar />
-
       {/* Secondary Bar / Breadcrumb */}
       <div className="border-b border-border bg-background">
         <div className="container mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -203,19 +201,19 @@ export default function BrowseLayout({ category, subcategory, searchQuery }: Bro
           <aside className="hidden w-64 shrink-0 lg:block">
             <div className="sticky top-24 pb-8">
               <h2 className="mb-4 font-heading text-lg font-bold text-foreground">Refine Search</h2>
-              <FilterSidebar />
+              <FilterSidebar categories={categories} />
             </div>
           </aside>
 
           {/* Mobile Slide-Over Filter Drawer */}
           {isMobileFiltersOpen && (
-            <div className="fixed inset-0 z-[100] lg:hidden">
+           <div className="fixed inset-0 z-[100] lg:hidden">
               <div 
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
                 onClick={() => setIsMobileFiltersOpen(false)}
               />
               <div className="absolute inset-y-0 left-0 w-[280px] sm:w-[320px] bg-background shadow-2xl overflow-hidden animate-in slide-in-from-left duration-300">
-                <FilterSidebar onClose={() => setIsMobileFiltersOpen(false)} />
+                <FilterSidebar onClose={() => setIsMobileFiltersOpen(false)} categories={categories} />
               </div>
             </div>
           )}
@@ -290,8 +288,6 @@ export default function BrowseLayout({ category, subcategory, searchQuery }: Bro
         )}
 
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -7,13 +7,26 @@ import LocationBrowser from "@/components/home/LocationBrowser";
 import HowItWorks from "@/components/home/HowItWorks";
 import TrustSafety from "@/components/home/TrustSafety";
 import Footer from "@/components/home/Footer";
+import { API_URL } from "@/services/api";
+import { Category } from "@/services/categoryService";
 
-export default function Home() {
+export default async function Home() {
+  let categories: Category[] = [];
+  
+  try {
+    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      categories = await res.json();
+    }
+  } catch (error) {
+    console.error("Failed to fetch categories for Hero:", error);
+  }
+
   return (
     <>
       <Navbar />
       <main className="flex-1">
-        <Hero />
+        <Hero categories={categories} />
         <PopularCategories />
         <FeaturedAds />
         <LatestAds />
