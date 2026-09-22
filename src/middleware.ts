@@ -8,6 +8,11 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const adminSubdomain = process.env.NEXT_PUBLIC_ADMIN_SUBDOMAIN || 'admin.localhost:3000';
 
+  // Redirect admin root to login
+  if (hostname === adminSubdomain && url.pathname === '/') {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   // Only allow access to admin routes if the host matches the admin subdomain
   if (url.pathname.startsWith('/login') || url.pathname.startsWith('/dashboard')) {
     if (hostname !== adminSubdomain) {
@@ -20,5 +25,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/login', '/dashboard/:path*'],
+  matcher: ['/', '/login', '/dashboard/:path*'],
 };
