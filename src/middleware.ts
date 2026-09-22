@@ -1,0 +1,24 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  
+  // Get hostname (e.g. 'admin.localhost:3000' or 'admin.domain.com')
+  const hostname = request.headers.get('host') || '';
+  const adminSubdomain = process.env.NEXT_PUBLIC_ADMIN_SUBDOMAIN || 'admin.localhost:3000';
+
+  // Only allow access to /login if the host matches the admin subdomain
+  if (url.pathname.startsWith('/login')) {
+    if (hostname !== adminSubdomain) {
+      // Redirect to public homepage if accessed from a non-admin domain
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/login'],
+};

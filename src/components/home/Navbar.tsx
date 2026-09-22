@@ -65,19 +65,6 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <Link
-            href="/login"
-            className="hidden sm:inline-flex text-sm font-medium text-foreground/80 hover:text-brand-600 transition-colors"
-          >
-            Login
-          </Link>
-
-          <Link
-            href="/post-ad"
-            className="inline-flex h-10 items-center justify-center rounded-full bg-brand-500 px-6 text-sm font-medium text-white shadow-sm hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:pointer-events-none disabled:opacity-50 transition-all hover:-translate-y-0.5 hover:shadow-md"
-          >
-            Post an Ad
-          </Link>
 
           {/* Mobile Menu Button */}
           <button className="md:hidden flex items-center justify-center rounded-full p-2 text-foreground/70 hover:bg-black/5 transition-colors">

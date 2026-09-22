@@ -44,7 +44,6 @@ export default function Footer() {
               <li><Link href="/ads" className="text-sm hover:text-brand-400 transition-colors">Browse Ads</Link></li>
               <li><Link href="/categories" className="text-sm hover:text-brand-400 transition-colors">Categories</Link></li>
               <li><Link href="/locations" className="text-sm hover:text-brand-400 transition-colors">Locations</Link></li>
-              <li><Link href="/post-ad" className="text-sm hover:text-brand-400 transition-colors">Post an Ad</Link></li>
             </ul>
           </div>
 
@@ -60,15 +59,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Links 3 */}
-          <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white">Account</h3>
-            <ul className="flex flex-col gap-3">
-              <li><Link href="/login" className="text-sm hover:text-brand-400 transition-colors">Login</Link></li>
-              <li><Link href="/register" className="text-sm hover:text-brand-400 transition-colors">Register</Link></li>
-              <li><Link href="/account/ads" className="text-sm hover:text-brand-400 transition-colors">My Ads</Link></li>
-            </ul>
-          </div>
+
 
         </div>
 
