@@ -65,11 +65,8 @@ export default function Sidepanel({
 
       <div className="absolute inset-y-0 right-0 flex max-w-full pl-10">
         <div
-          className={[
-            "w-screen max-w-md transform transition-transform duration-300 ease-in-out",
-            // Both complete strings required for Tailwind v4 JIT
-            isOpen ? "translate-x-0" : "translate-x-full",
-          ].join(" ")}
+          className="w-screen max-w-md transform transition-transform duration-300 ease-in-out"
+          style={{ transform: isOpen ? "translateX(0)" : "translateX(100%)" }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="sidepanel-title"

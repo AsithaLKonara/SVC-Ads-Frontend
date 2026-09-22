@@ -2,8 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/home/Navbar";
-import Footer from "@/components/home/Footer";
 import { z } from "zod";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -75,7 +73,6 @@ export default function LoginPage() {
 
   return (
     <>
-      <Navbar />
       <main className="flex min-h-[calc(100vh-64px)] flex-col lg:flex-row">
         {/* Left Side: Image / Branding */}
         <div className="relative hidden w-full bg-brand-900 lg:block lg:w-1/2">
@@ -191,7 +188,6 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </>
   );
 }

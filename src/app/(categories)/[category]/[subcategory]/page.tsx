@@ -1,17 +1,8 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import BrowseLayout from "@/components/browse/BrowseLayout";
-
-// The allowed top-level categories based on the platform hierarchy
-const VALID_CATEGORIES = [
-  "vehicles",
-  "properties",
-  "electronics",
-  "furniture",
-  "services",
-  "jobs",
-  "fashion",
-];
+import { Category } from "@/services/categoryService";
+import { API_URL } from "@/services/api";
 
 export default async function SubCategoryPage({
   params,
@@ -20,9 +11,25 @@ export default async function SubCategoryPage({
 }) {
   const { category, subcategory } = await params;
 
-  // Validate the top-level category exists
-  if (!VALID_CATEGORIES.includes(category.toLowerCase())) {
-    notFound();
+  try {
+    // Fetch active categories from the public endpoint
+    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
+    if (!res.ok) throw new Error();
+    const categories: Category[] = await res.json();
+    
+    // Find the parent category
+    const parentCategory = categories.find((c) => c.slug.toLowerCase() === category.toLowerCase());
+    
+    // Validate both parent and subcategory exist in the active list
+    const isValid = parentCategory && parentCategory.children?.some(
+      (sub) => sub.slug.toLowerCase() === subcategory.toLowerCase()
+    );
+    
+    if (!isValid) {
+      notFound();
+    }
+  } catch (error) {
+    console.error("Failed to validate subcategory route", error);
   }
 
   // We pass both to the BrowseLayout which will filter and update UI

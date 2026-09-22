@@ -1,8 +1,22 @@
 import Link from "next/link";
 import React from "react";
 import Image from "next/image";
+import { Category } from "@/services/categoryService";
+import { API_URL } from "@/services/api";
 
-export default function Footer() {
+export default async function Footer() {
+  let topCategories: Category[] = [];
+  
+  try {
+    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const categories: Category[] = await res.json();
+      topCategories = categories.slice(0, 4); // Only show top 4 in footer
+    }
+  } catch (error) {
+    console.error("Failed to fetch footer categories", error);
+  }
+
   return (
     <footer className="relative bg-gray-950 text-gray-400 py-16 border-t border-gray-900 overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -89,8 +103,15 @@ export default function Footer() {
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white">Marketplace</h3>
             <ul className="flex flex-col gap-3">
               <li><Link href="/ads" className="text-sm hover:text-brand-400 transition-colors">Browse Ads</Link></li>
-              <li><Link href="/categories" className="text-sm hover:text-brand-400 transition-colors">Categories</Link></li>
-              <li><Link href="/locations" className="text-sm hover:text-brand-400 transition-colors">Locations</Link></li>
+              <li><Link href="/categories" className="text-sm hover:text-brand-400 transition-colors">All Categories</Link></li>
+              <li className="pt-2 pb-1 text-xs uppercase tracking-wider text-gray-500">Top Categories</li>
+              {topCategories.map(cat => (
+                <li key={cat.id}>
+                  <Link href={`/${cat.slug}`} className="text-sm hover:text-brand-400 transition-colors">
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -105,8 +126,6 @@ export default function Footer() {
               <li><Link href="/contact" className="text-sm hover:text-brand-400 transition-colors">Contact</Link></li>
             </ul>
           </div>
-
-
 
         </div>
 
