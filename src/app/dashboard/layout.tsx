@@ -1,6 +1,9 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
   Users, 
@@ -19,6 +22,29 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      router.push("/login");
+      return;
+    }
+    const parsed = JSON.parse(userData);
+    setUser(parsed);
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    document.cookie = "token=; path=/; max-age=0;";
+    router.push("/login");
+  };
+
+  if (!user) return null; // or a loading spinner
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar */}
@@ -45,61 +71,72 @@ export default function DashboardLayout({
           </div>
           <Link
             href="/dashboard"
-            className="flex items-center gap-3 rounded-md bg-brand-50 px-3 py-2 text-sm font-medium text-brand-700"
+            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${pathname === '/dashboard' ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-100'}`}
           >
             <LayoutDashboard size={18} />
             Dashboard
           </Link>
-          <Link
-            href="/dashboard/analytics"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-          >
-            <LineChart size={18} />
-            Analytics
-          </Link>
+          {user?.role === 'ADMIN' && (
+            <Link
+              href="/dashboard/analytics"
+              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${pathname === '/dashboard/analytics' ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-100'}`}
+            >
+              <LineChart size={18} />
+              Analytics
+            </Link>
+          )}
           
           <div className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
             Management
           </div>
           <Link
             href="/dashboard/ads"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${pathname.startsWith('/dashboard/ads') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-100'}`}
           >
             <Tag size={18} />
             Advertisements
           </Link>
           <Link
             href="/dashboard/categories"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${pathname.startsWith('/dashboard/categories') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-100'}`}
           >
             <FolderTree size={18} />
             Categories
           </Link>
           <Link
             href="/dashboard/locations"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${pathname.startsWith('/dashboard/locations') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-100'}`}
           >
             <MapPin size={18} />
             Locations
           </Link>
-          <Link
-            href="/dashboard/users"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-          >
-            <Users size={18} />
-            Users
-          </Link>
-          <Link
-            href="/dashboard/reports"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-          >
-            <AlertOctagon size={18} />
-            Reports
-          </Link>
+          
+          {user?.role === 'ADMIN' && (
+            <Link
+              href="/dashboard/users"
+              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${pathname.startsWith('/dashboard/users') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-100'}`}
+            >
+              <Users size={18} />
+              Users
+            </Link>
+          )}
+
+          {user?.role === 'ADMIN' && (
+            <Link
+              href="/dashboard/reports"
+              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${pathname.startsWith('/dashboard/reports') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-100'}`}
+            >
+              <AlertOctagon size={18} />
+              Reports
+            </Link>
+          )}
         </nav>
 
         <div className="absolute bottom-0 w-full border-t border-slate-200 p-4">
-          <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+          <button 
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+          >
             <LogOut size={18} />
             Sign Out
           </button>

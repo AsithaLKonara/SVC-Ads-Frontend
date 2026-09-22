@@ -4,11 +4,21 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
+import { z } from "zod";
+import { Eye, EyeOff } from "lucide-react";
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(6, "Password must be at least 6 characters long."),
+});
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,14 +32,22 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
+    // Zod validation
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      // In the future, this URL should probably be an environment variable.
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       const data = await response.json();
@@ -42,7 +60,9 @@ export default function LoginPage() {
       // and in a cookie so middleware can read it.
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Strict`;
+      
+      const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60; // 30 days or 1 day
+      document.cookie = `token=${data.token}; path=/; max-age=${maxAge}; SameSite=Strict`;
       
       // Redirect to dashboard
       router.push("/dashboard");
@@ -59,7 +79,6 @@ export default function LoginPage() {
       <main className="flex min-h-[calc(100vh-64px)] flex-col lg:flex-row">
         {/* Left Side: Image / Branding */}
         <div className="relative hidden w-full bg-brand-900 lg:block lg:w-1/2">
-          {/* Add a nice abstract background or image here */}
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop')] bg-cover bg-center opacity-40"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-brand-900 via-brand-900/60 to-transparent"></div>
           
@@ -121,25 +140,43 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="laklandreality@gmail.com"
                     className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-                    required
                   />
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <label htmlFor="password" className="text-sm font-medium text-foreground">
-                      Password
-                    </label>
+                  <label htmlFor="password" className="text-sm font-medium text-foreground">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="block w-full rounded-xl border border-border bg-background py-3 pl-4 pr-12 text-sm text-foreground outline-none transition-all focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
+                </div>
+                
+                <div className="flex items-center">
                   <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-                    required
+                    id="rememberMe"
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
                   />
+                  <label htmlFor="rememberMe" className="ml-2 block text-sm text-foreground">
+                    Stay logged in
+                  </label>
                 </div>
               </div>
 
