@@ -41,12 +41,6 @@ export default function Navbar() {
           >
             Browse
           </Link>
-          <Link
-            href="/categories"
-            className="text-sm font-medium text-foreground/80 hover:text-brand-600 transition-colors"
-          >
-            Categories
-          </Link>
         </nav>
 
         {/* Search Bar (Hidden on Mobile) */}

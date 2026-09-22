@@ -1,52 +1,35 @@
 import Link from "next/link";
 import React from "react";
 import AdCard from "../ui/AdCard";
+import { adService, Ad } from "@/services/adService";
 
-// Mock Data
-const featuredAds = [
-  {
-    id: "v-1234",
-    title: "Toyota Aqua S Grade 2014",
-    price: "7,800,000",
-    location: "Colombo 6, Colombo",
-    image: "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
-    postedTime: "2 hours ago",
-    condition: "Used",
-    isFeatured: true,
-  },
-  {
-    id: "p-5678",
-    title: "Luxury 2BR Apartment in Havelock City",
-    price: "45,000,000",
-    location: "Havelock Town, Colombo",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-    postedTime: "5 hours ago",
-    condition: "New",
-    isFeatured: true,
-  },
-  {
-    id: "e-9012",
-    title: "Apple iPhone 14 Pro Max 256GB",
-    price: "320,000",
-    location: "Kandy City, Kandy",
-    image: "https://images.unsplash.com/photo-1696446701796-da61225697cc?auto=format&fit=crop&w=800&q=80",
-    postedTime: "Just now",
-    condition: "Like New",
-    isFeatured: true,
-  },
-  {
-    id: "v-3456",
-    title: "Honda Vezel Z Sensing 2016",
-    price: "9,500,000",
-    location: "Nugegoda, Colombo",
-    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&w=800&q=80",
-    postedTime: "1 day ago",
-    condition: "Used",
-    isFeatured: true,
-  },
-];
+export default async function FeaturedAds() {
+  let ads: Ad[] = [];
+  try {
+    ads = await adService.getAds({ isFeatured: 'true', limit: '4', status: 'ACTIVE' });
+  } catch (error) {
+    console.error("Failed to fetch featured ads:", error);
+  }
 
-export default function FeaturedAds() {
+  const mappedAds = ads.map(ad => {
+    const d = new Date(ad.createdAt);
+    const postedTime = `${d.getUTCDate().toString().padStart(2, '0')}/${(d.getUTCMonth() + 1).toString().padStart(2, '0')}/${d.getUTCFullYear()}`;
+    
+    return {
+      id: ad.id,
+      slug: ad.slug,
+      title: ad.title,
+      price: ad.price.toLocaleString('en-US'),
+      location: `${ad.city}, ${ad.district}`,
+      image: ad.images && ad.images.length > 0 ? ad.images[0] : 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80',
+      postedTime,
+      condition: ad.condition || 'Used',
+      isFeatured: ad.isFeatured
+    };
+  });
+
+  if (mappedAds.length === 0) return null;
+
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -69,7 +52,7 @@ export default function FeaturedAds() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredAds.map((ad) => (
+          {mappedAds.map((ad) => (
             <AdCard key={ad.id} {...ad} />
           ))}
         </div>

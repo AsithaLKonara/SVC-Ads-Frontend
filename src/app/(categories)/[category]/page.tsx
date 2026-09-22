@@ -1,9 +1,10 @@
 import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import BrowseLayout from "@/components/browse/BrowseLayout";
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 import { Category } from "@/services/categoryService";
+import { adService, Ad } from "@/services/adService";
 import { API_URL } from "@/services/api";
 
 export default async function CategoryPage({
@@ -13,7 +14,8 @@ export default async function CategoryPage({
 }) {
   const { category } = await params;
   let categories: Category[] = [];
-  let isValid = true;
+  let ads: Ad[] = [];
+  let isValid = false;
 
   try {
     // Fetch active categories from the public endpoint
@@ -24,19 +26,32 @@ export default async function CategoryPage({
       isValid = categories.some((c) => c.slug.toLowerCase() === category.toLowerCase());
     }
   } catch (error) {
-    // If the API fails, we could fallback to notFound or just render BrowseLayout
-    // which will show an empty state or error in its own right
     console.error("Failed to fetch categories for validation", error);
   }
 
-  if (!isValid) {
-    notFound();
+  // Next.js Turbopack currently has issues with notFound() in some async paths,
+  // we gracefully handle invalid categories by returning empty ads or redirecting.
+  if (!isValid && categories.length > 0) {
+    // We fetched categories but this slug isn't one of them
+    redirect("/ads");
+  }
+
+  if (isValid) {
+    try {
+      ads = await adService.getAds({ category, status: 'ACTIVE' });
+    } catch (error) {
+      console.error("Failed to fetch ads for category:", error);
+    }
   }
 
   return (
     <>
       <Navbar />
-      <BrowseLayout category={category} categories={categories} />
+      <BrowseLayout 
+        category={category} 
+        categories={categories} 
+        initialAds={ads}
+      />
       <Footer />
     </>
   );

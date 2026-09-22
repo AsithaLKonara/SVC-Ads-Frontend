@@ -6,31 +6,7 @@ import AdCard from "@/components/ui/AdCard";
 import Link from "next/link";
 import { Category } from "@/services/categoryService";
 
-// Mock Data for Ads Page
-const mockAds = Array.from({ length: 12 }).map((_, i) => ({
-  id: `ad-${i}`,
-  title: [
-    "Toyota Aqua S Grade 2014",
-    "Luxury 2BR Apartment in Havelock City",
-    "Apple iPhone 14 Pro Max 256GB",
-    "Honda Vezel Z Sensing 2016",
-    "Professional Plumbing Services",
-    "Teak Dining Table with 6 Chairs"
-  ][i % 6],
-  price: ["7,800,000", "45,000,000", "320,000", "9,500,000", "2,500", "125,000"][i % 6],
-  location: ["Colombo 6", "Havelock Town", "Kandy City", "Nugegoda", "Dehiwala", "Moratuwa"][i % 6],
-  image: [
-    "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1696446701796-da61225697cc?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1617806118233-18e1c0945594?auto=format&fit=crop&w=800&q=80"
-  ][i % 6],
-  postedTime: `${(i % 5) + 1} hours ago`,
-  condition: ["Used", "New", "Like New", "Used", "Service", "Like New"][i % 6],
-  isFeatured: i < 2,
-}));
+import { Ad } from "@/services/adService";
 
 // Dictionary for Dynamic Category Content
 const CATEGORY_DATA: Record<string, { desc: string; subcategories: string[]; seoContent: { text: string; faqs: { q: string; a: string }[] } }> = {
@@ -79,9 +55,10 @@ interface BrowseLayoutProps {
   subcategory?: string;
   searchQuery?: string;
   categories?: Category[];
+  initialAds?: Ad[];
 }
 
-export default function BrowseLayout({ category, subcategory, searchQuery, categories = [] }: BrowseLayoutProps) {
+export default function BrowseLayout({ category, subcategory, searchQuery, categories = [], initialAds = [] }: BrowseLayoutProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -104,6 +81,23 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
   }
   
   const catData = category ? getCategoryData(category.toLowerCase()) : null;
+
+  const mappedAds = initialAds.map(ad => {
+    const d = new Date(ad.createdAt);
+    const postedTime = `${d.getUTCDate().toString().padStart(2, '0')}/${(d.getUTCMonth() + 1).toString().padStart(2, '0')}/${d.getUTCFullYear()}`;
+    
+    return {
+      id: ad.id,
+      slug: ad.slug,
+      title: ad.title,
+      price: ad.price.toLocaleString('en-US'),
+      location: `${ad.city}, ${ad.district}`,
+      image: ad.images && ad.images.length > 0 ? ad.images[0] : 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80',
+      postedTime,
+      condition: ad.condition || 'Used',
+      isFeatured: ad.isFeatured
+    };
+  });
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -226,7 +220,7 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-2">
                 <div>
                   <h1 className="font-heading text-2xl font-bold text-foreground">{pageTitle}</h1>
-                  <p className="text-sm text-foreground/60">Showing 1 - 12 of 12,450 results</p>
+                  <p className="text-sm text-foreground/60">Showing {mappedAds.length} results</p>
                 </div>
                 <SortAndToggle viewMode={viewMode} setViewMode={setViewMode} isSearch={!!searchQuery} />
               </div>
@@ -235,17 +229,27 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
             {/* In Category mode, just show a minimal header since H1 is in Hero */}
             {category && (
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-2">
-                <p className="text-sm font-semibold text-foreground/60">Showing 1 - 12 of 3,240 results</p>
+                <p className="text-sm font-semibold text-foreground/60">Showing {mappedAds.length} results</p>
                 <SortAndToggle viewMode={viewMode} setViewMode={setViewMode} isSearch={!!searchQuery} />
               </div>
             )}
 
             {/* Grid/List */}
-            <div className={viewMode === "grid" ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "flex flex-col gap-4"}>
-              {mockAds.map((ad) => (
-                <AdCard key={ad.id} {...ad} viewMode={viewMode} />
-              ))}
-            </div>
+            {mappedAds.length > 0 ? (
+              <div className={viewMode === "grid" ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "flex flex-col gap-4"}>
+                {mappedAds.map((ad) => (
+                  <AdCard key={ad.id} {...ad} viewMode={viewMode} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-24 text-center">
+                <div className="mb-4 rounded-full bg-card p-4 shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/40"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
+                <h3 className="font-heading text-lg font-bold text-foreground">No ads found</h3>
+                <p className="mt-2 max-w-md text-sm text-foreground/60">We couldn't find any ads matching your current filters. Try broadening your search criteria.</p>
+              </div>
+            )}
 
             {/* Pagination */}
             <div className="mt-12 flex items-center justify-center gap-2">

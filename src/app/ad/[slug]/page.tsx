@@ -2,56 +2,13 @@ import React from "react";
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import ImageGallery from "@/components/ad/ImageGallery";
 import AdDetails from "@/components/ad/AdDetails";
 import AdSidebar from "@/components/ad/AdSidebar";
 import StickyMobileContact from "@/components/ad/StickyMobileContact";
 import RelatedAds from "@/components/ad/RelatedAds";
-
-// We'll mock the data for now. In reality, you'd fetch this based on the slug.
-const MOCK_AD = {
-  id: "1",
-  title: "Toyota Aqua G Grade 2014",
-  price: "7,250,000",
-  location: "Colombo 6, Colombo",
-  postedDate: "Posted on 24 Aug 2026",
-  views: 1245,
-  description: `Mint condition Toyota Aqua G Grade 2014 for sale.
-
-- 1st Owner
-- Push Start
-- Dual Multi-function Steering
-- Scoop Lights
-- Auto Retract Mirrors
-- Original Setup with Reverse Camera
-- EV/Eco Modes perfectly working
-- Hybrid battery replaced 6 months ago (with warranty)
-- ABS replaced 1 year ago
-
-All maintenance records available. Used strictly as a personal vehicle. Selling due to upgrade. Price is slightly negotiable after inspection. No brokers please.`,
-  attributes: {
-    Condition: "Used",
-    Brand: "Toyota",
-    Model: "Aqua",
-    "Year of Manufacture": "2014",
-    Mileage: "112,000 km",
-    Transmission: "Automatic",
-    Fuel: "Hybrid",
-    "Engine capacity": "1,500 cc",
-  },
-  images: [
-    "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
-  ],
-  seller: {
-    name: "Kamal Perera",
-    avatar: "",
-    joinedDate: "Feb 2023",
-    isVerified: true,
-    phone: "077 123 4567"
-  }
-};
+import { adService, Ad } from "@/services/adService";
 
 export default async function AdPage({
   params,
@@ -60,8 +17,44 @@ export default async function AdPage({
 }) {
   const { slug } = await params;
   
-  // Here we would typically fetch the ad using the slug
-  const ad = MOCK_AD;
+  let rawAd: Ad | null = null;
+  try {
+    rawAd = await adService.getAd(slug);
+  } catch (error) {
+    console.error("Failed to fetch ad:", error);
+    notFound();
+  }
+
+  if (!rawAd) notFound();
+
+  const d = new Date(rawAd.createdAt);
+  const postedDate = `${d.getUTCDate().toString().padStart(2, '0')}/${(d.getUTCMonth() + 1).toString().padStart(2, '0')}/${d.getUTCFullYear()}`;
+
+  // Map the backend Ad model to the frontend expected data structure
+  const ad = {
+    id: rawAd.id,
+    title: rawAd.title,
+    price: rawAd.price.toLocaleString('en-US'),
+    location: `${rawAd.city}, ${rawAd.district}`,
+    postedDate: `Posted on ${postedDate}`,
+    views: Math.floor(Math.random() * 1000) + 100, // Mock views for now
+    description: rawAd.description,
+    attributes: {
+      Condition: rawAd.condition || "Used",
+      Category: rawAd.category?.name || "Uncategorized",
+      ...(typeof rawAd.attributes === 'object' && rawAd.attributes !== null ? rawAd.attributes : {})
+    },
+    images: rawAd.images && rawAd.images.length > 0 
+      ? rawAd.images 
+      : ["https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=1200&q=80"], // Fallback
+    seller: {
+      name: rawAd.user?.name || "Unknown Seller",
+      avatar: "",
+      joinedDate: "Unknown", // Would normally come from user profile
+      isVerified: true,
+      phone: rawAd.contactPhone || "077 000 0000" // Fallback to mock phone
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -75,11 +68,9 @@ export default async function AdPage({
             <ol className="flex items-center space-x-2">
               <li><Link href="/" className="hover:text-brand-600">Home</Link></li>
               <li><span className="mx-2">/</span></li>
-              <li><Link href="/ads?category=vehicles" className="hover:text-brand-600">Vehicles</Link></li>
+              <li><Link href={`/ads?category=${rawAd.category?.slug}`} className="hover:text-brand-600">{rawAd.category?.name || "Ads"}</Link></li>
               <li><span className="mx-2">/</span></li>
-              <li><Link href="/ads?category=vehicles&subcategory=cars" className="hover:text-brand-600">Cars</Link></li>
-              <li><span className="mx-2">/</span></li>
-              <li className="truncate font-medium text-foreground" aria-current="page">Toyota Aqua G Grade 2014</li>
+              <li className="truncate font-medium text-foreground" aria-current="page">{ad.title}</li>
             </ol>
           </nav>
 
@@ -117,7 +108,7 @@ export default async function AdPage({
             {/* Right Column (Sidebar) */}
             <div className="w-full lg:w-1/3">
               <div className="sticky top-24">
-                <AdSidebar data={{...ad, phone: ad.seller.phone}} />
+                <AdSidebar data={{...ad, phone: ad.seller.phone, categoryName: rawAd.category?.name || "Ads"}} />
               </div>
             </div>
 

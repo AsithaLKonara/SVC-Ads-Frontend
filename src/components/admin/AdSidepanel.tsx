@@ -1,216 +1,538 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useEffect, useState, useMemo } from "react";
 import Sidepanel from "./Sidepanel";
-import { ChevronDown, UploadCloud, MapPin, Tag, Star, Zap } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { z } from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Category } from "@/services/categoryService";
+import { adService, Ad } from "@/services/adService";
+import Select from "react-select";
+
+// Static districts and cities
+const DISTRICTS: Record<string, string[]> = {
+  Colombo: ["Colombo 1", "Colombo 2", "Dehiwala", "Nugegoda", "Maharagama", "Mount Lavinia"],
+  Gampaha: ["Gampaha", "Negombo", "Kelaniya", "Kadawatha", "Wattala"],
+  Kandy: ["Kandy City", "Peradeniya", "Katugastota", "Gampola"],
+  Galle: ["Galle City", "Ambalangoda", "Hikkaduwa", "Elpitiya"],
+  Kurunegala: ["Kurunegala City", "Kuliyapitiya", "Narammala", "Wariyapola"],
+};
+
+const districtOptions = Object.keys(DISTRICTS).map(d => ({ value: d, label: d }));
+
+const adSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  price: z.number().min(0, "Price must be positive"),
+  condition: z.string().optional(),
+  images: z.array(z.string()).max(5, "Maximum 5 images allowed").optional(),
+  category: z.object({ value: z.string(), label: z.string() }).nullable(),
+  district: z.object({ value: z.string(), label: z.string() }).nullable(),
+  city: z.object({ value: z.string(), label: z.string() }).nullable(),
+  isFeatured: z.boolean(),
+  contactPhone: z.string().optional(),
+  attributes: z.record(z.any()).optional(),
+  status: z.enum(["ACTIVE", "INACTIVE"]),
+}).refine(data => data.category !== null, {
+  message: "Category is required",
+  path: ["category"]
+}).refine(data => data.district !== null, {
+  message: "District is required",
+  path: ["district"]
+}).refine(data => data.city !== null, {
+  message: "City is required",
+  path: ["city"]
+});
+
+type AdFormData = z.infer<typeof adSchema>;
 
 interface AdSidepanelProps {
   isOpen: boolean;
   onClose: () => void;
   mode: "view" | "add" | "edit";
-  ad?: any;
+  ad?: Ad;
+  categories?: Category[]; // Passed from parent
+  onSuccess?: () => void;
 }
 
-export default function AdSidepanel({ isOpen, onClose, mode, ad }: AdSidepanelProps) {
-  const [activeSection, setActiveSection] = useState<string>("basic");
-  const title = mode === "add" ? "Post New Ad" : mode === "edit" ? "Edit Advertisement" : "Ad Details";
+export default function AdSidepanel({ 
+  isOpen, 
+  onClose, 
+  mode, 
+  ad, 
+  categories = [],
+  onSuccess 
+}: AdSidepanelProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
+  const title = mode === "add" ? "Post New Ad" : mode === "edit" ? "Edit Ad" : "Ad Details";
+
+  const { control, register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<AdFormData>({
+    resolver: zodResolver(adSchema),
+    defaultValues: {
+      status: "ACTIVE",
+      category: null,
+      district: null,
+      city: null,
+      isFeatured: false,
+      contactPhone: "",
+      attributes: {},
+    }
+  });
+
+  const selectedDistrict = watch("district");
+
+  const cityOptions = useMemo(() => {
+    if (!selectedDistrict) return [];
+    const cities = DISTRICTS[selectedDistrict.value] || [];
+    return cities.map(c => ({ value: c, label: c }));
+  }, [selectedDistrict]);
+
+  // When district changes, clear city if it's no longer valid
+  useEffect(() => {
+    const currentCity = watch("city");
+    if (currentCity && selectedDistrict) {
+      const validCities = DISTRICTS[selectedDistrict.value] || [];
+      if (!validCities.includes(currentCity.value)) {
+        setValue("city", null);
+      }
+    }
+  }, [selectedDistrict, watch, setValue]);
+
+  const categoryOptions = useMemo(() => {
+    return categories.map(cat => ({
+      label: cat.name,
+      options: cat.children && cat.children.length > 0 
+        ? cat.children.map(child => ({ value: child.id, label: child.name, original: child }))
+        : [{ value: cat.id, label: cat.name, original: cat }]
+    }));
+  }, [categories]);
+
+  const selectedCategory = watch("category") as any;
+  const dynamicAttributes = useMemo(() => {
+    if (!selectedCategory || !selectedCategory.original) return [];
+    
+    // The original category is stored in the option by our custom mapping above
+    const cat = selectedCategory.original;
+    let attrs = [];
+    try {
+      if (cat.attributes) {
+        attrs = typeof cat.attributes === 'string' ? JSON.parse(cat.attributes) : cat.attributes;
+      } else if (cat.parentId) {
+        // If child has no attributes, try to inherit from parent
+        const parent = categories.find(p => p.id === cat.parentId);
+        if (parent && parent.attributes) {
+          attrs = typeof parent.attributes === 'string' ? JSON.parse(parent.attributes) : parent.attributes;
+        }
+      }
+    } catch(e) {}
+    
+    return Array.isArray(attrs) ? attrs : [];
+  }, [selectedCategory, categories]);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (mode === "edit" && ad) {
+        reset({
+          title: ad.title,
+          description: ad.description,
+          price: ad.price,
+          condition: ad.condition || "",
+          images: ad.images || [],
+          category: ad.category ? { value: ad.categoryId, label: ad.category.name, original: ad.category } : null,
+          district: { value: ad.district, label: ad.district },
+          city: { value: ad.city, label: ad.city },
+          isFeatured: ad.isFeatured,
+          contactPhone: ad.contactPhone || "",
+          attributes: ad.attributes || {},
+          status: ad.status,
+        });
+        setImagePreviews(ad.images || []);
+      } else if (mode === "add") {
+        reset({
+          title: "",
+          description: "",
+          price: 0,
+          condition: "",
+          images: [],
+          category: null,
+          district: null,
+          city: null,
+          isFeatured: false,
+          contactPhone: "",
+          attributes: {},
+          status: "ACTIVE",
+        });
+        setImagePreviews([]);
+      }
+      setApiError(null);
+    }
+  }, [isOpen, mode, ad, reset]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    
+    if (imagePreviews.length + files.length > 5) {
+      alert("Maximum 5 images allowed.");
+      return;
+    }
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setImagePreviews(prev => [...prev, reader.result as string]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    
+    // Clear input
+    e.target.value = '';
+  };
+
+  const removeImage = (index: number) => {
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const onSubmit = async (data: AdFormData) => {
+    if (mode === "view") return;
+    
+    setIsSubmitting(true);
+    setApiError(null);
+    
+    try {
+      const payload = {
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        condition: data.condition || undefined,
+        images: imagePreviews,
+        categoryId: data.category!.value,
+        district: data.district!.value,
+        city: data.city!.value,
+        isFeatured: data.isFeatured,
+        contactPhone: data.contactPhone || undefined,
+        attributes: data.attributes || undefined,
+        status: data.status,
+      };
+
+      if (mode === "add") {
+        await adService.createAd(payload);
+      } else if (mode === "edit" && ad) {
+        await adService.updateAd(ad.id, payload);
+      }
+      
+      if (onSuccess) onSuccess();
+    } catch (error: any) {
+      setApiError(error.message || "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const customSelectStyles = {
+    control: (base: any, state: any) => ({
+      ...base,
+      borderColor: state.isFocused ? '#2563eb' : '#cbd5e1',
+      boxShadow: state.isFocused ? '0 0 0 1px #2563eb' : 'none',
+      '&:hover': { borderColor: '#94a3b8' },
+      borderRadius: '0.375rem',
+      padding: '2px',
+    }),
+    singleValue: (base: any) => ({
+      ...base,
+      color: '#0f172a',
+    }),
+    input: (base: any) => ({
+      ...base,
+      color: '#0f172a',
+    }),
+    option: (base: any, state: any) => ({
+      ...base,
+      color: '#0f172a',
+      backgroundColor: state.isFocused ? '#e2e8f0' : 'transparent',
+      '&:active': {
+        backgroundColor: '#cbd5e1'
+      }
+    }),
+    menu: (base: any) => ({
+      ...base,
+      zIndex: 50,
+      backgroundColor: '#ffffff'
+    })
+  };
 
   return (
     <Sidepanel isOpen={isOpen} onClose={onClose} title={title}>
-      
-      {/* Admin Controls (Always visible at the top if editing/viewing) */}
-      {mode !== "add" && (
-        <div className="mb-6 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-indigo-900">
-            Admin Marketing Controls
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-indigo-900">
-                <Star size={16} className="text-amber-500 fill-amber-500" />
-                <span className="font-medium">Pin Ad to Top (Featured)</span>
-              </div>
-              <button
-                disabled={mode === "view"}
-                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
-                  mode === "view" ? "bg-amber-200 cursor-not-allowed" : "bg-amber-500"
-                }`}
-              >
-                <span className="translate-x-5 inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
-              </button>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex h-full flex-col">
+        <div className="flex-1 pb-4 overflow-y-auto">
+          {apiError && (
+            <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">
+              {apiError}
             </div>
+          )}
+
+          <div className="space-y-5 px-1">
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-indigo-900">
-                <Zap size={16} className="text-rose-500 fill-rose-500" />
-                <span className="font-medium">Boost Ad (High Visibility)</span>
-              </div>
-              <button
-                disabled={mode === "view"}
-                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
-                  mode === "view" ? "bg-slate-300 cursor-not-allowed" : "bg-slate-300"
-                }`}
-              >
-                <span className="translate-x-0 inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-6">
-        
-        {/* Basic Information */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 flex items-center gap-2">
-            <Tag size={16} /> Basic Information
-          </h3>
-          
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Ad Title</label>
-            <input
-              type="text"
-              disabled={mode === "view"}
-              placeholder="What are you selling?"
-              className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
-              <select
-                disabled={mode === "view"}
-                className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500 bg-white"
-              >
-                <option value="">Select...</option>
-                <option value="1">Vehicles</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Subcategory</label>
-              <select
-                disabled={mode === "view"}
-                className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500 bg-white"
-              >
-                <option value="">Select...</option>
-                <option value="1">Cars</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Price (Rs)</label>
-            <input
-              type="number"
-              disabled={mode === "view"}
-              placeholder="0.00"
-              className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Description</label>
-            <textarea
-              disabled={mode === "view"}
-              rows={4}
-              placeholder="Describe the item..."
-              className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
-            />
-          </div>
-        </div>
-
-        {/* Dynamic Attributes (Appears based on category) */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 flex items-center gap-2">
-            Attributes (Vehicles)
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Condition</label>
-              <select
-                disabled={mode === "view"}
-                className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 disabled:bg-slate-50 disabled:text-slate-500 bg-white"
-              >
-                <option>Used</option>
-                <option>New</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Mileage (km)</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Title *</label>
               <input
-                type="number"
-                disabled={mode === "view"}
-                placeholder="e.g. 50000"
-                className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-500"
+                type="text"
+                disabled={mode === "view" || isSubmitting}
+                {...register("title")}
+                className={`block w-full rounded-md border ${errors.title ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-brand-500'} px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 disabled:bg-slate-50 disabled:text-slate-500`}
+              />
+              {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title.message}</p>}
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Category *</label>
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={categoryOptions}
+                    isClearable
+                    isDisabled={mode === "view" || isSubmitting}
+                    placeholder="Select category..."
+                    styles={customSelectStyles}
+                  />
+                )}
+              />
+              {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category.message}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Price (LKR) *</label>
+                <input
+                  type="number"
+                  disabled={mode === "view" || isSubmitting}
+                  {...register("price", { valueAsNumber: true })}
+                  className={`block w-full rounded-md border ${errors.price ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-brand-500'} px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 disabled:bg-slate-50 disabled:text-slate-500`}
+                />
+                {errors.price && <p className="mt-1 text-xs text-red-500">{errors.price.message}</p>}
+              </div>
+              
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Condition</label>
+                <select
+                  disabled={mode === "view" || isSubmitting}
+                  {...register("condition")}
+                  className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
+                >
+                  <option value="">N/A</option>
+                  <option value="New">New</option>
+                  <option value="Like New">Like New</option>
+                  <option value="Used">Used</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">District *</label>
+                <Controller
+                  name="district"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      options={districtOptions}
+                      isClearable
+                      isDisabled={mode === "view" || isSubmitting}
+                      placeholder="Select district..."
+                      styles={customSelectStyles}
+                    />
+                  )}
+                />
+                {errors.district && <p className="mt-1 text-xs text-red-500">{errors.district.message}</p>}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">City *</label>
+                <Controller
+                  name="city"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      options={cityOptions}
+                      isClearable
+                      isDisabled={!selectedDistrict || mode === "view" || isSubmitting}
+                      placeholder="Select city..."
+                      styles={customSelectStyles}
+                    />
+                  )}
+                />
+                {errors.city && <p className="mt-1 text-xs text-red-500">{errors.city.message}</p>}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Description *</label>
+              <textarea
+                disabled={mode === "view" || isSubmitting}
+                rows={4}
+                {...register("description")}
+                className={`block w-full rounded-md border ${errors.description ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-brand-500'} px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 disabled:bg-slate-50 disabled:text-slate-500`}
+              />
+              {errors.description && <p className="mt-1 text-xs text-red-500">{errors.description.message}</p>}
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Images (Max 5)</label>
+              
+              <div className="grid grid-cols-5 gap-2 mb-2">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative aspect-square rounded-md overflow-hidden bg-slate-100 border border-slate-200 group">
+                    <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                    <button 
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                  </div>
+                ))}
+                
+                {imagePreviews.length < 5 && (
+                  <label className="aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-50 hover:border-brand-400 hover:text-brand-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    <span className="text-[10px] font-medium text-center px-1">Upload</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      multiple
+                      className="hidden" 
+                      onChange={handleImageUpload}
+                      disabled={mode === "view" || isSubmitting}
+                    />
+                  </label>
+                )}
+              </div>
+              <p className="text-xs text-slate-500">Currently converting to Base64 (Local DB Storage). Images size will affect payload.</p>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Status</label>
+              <select
+                disabled={mode === "view" || isSubmitting}
+                {...register("status")}
+                className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
+              >
+                <option value="ACTIVE">Active (Visible)</option>
+                <option value="INACTIVE">Inactive (Hidden)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Contact Phone</label>
+              <input
+                type="tel"
+                disabled={mode === "view" || isSubmitting}
+                {...register("contactPhone")}
+                placeholder="e.g. 077 123 4567"
+                className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
               />
             </div>
-          </div>
-        </div>
 
-        {/* Location Information */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 flex items-center gap-2">
-            <MapPin size={16} /> Location
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">District</label>
-              <select
-                disabled={mode === "view"}
-                className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 disabled:bg-slate-50 disabled:text-slate-500 bg-white"
-              >
-                <option>Colombo</option>
-                <option>Kandy</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">City</label>
-              <select
-                disabled={mode === "view"}
-                className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 disabled:bg-slate-50 disabled:text-slate-500 bg-white"
-              >
-                <option>Nugegoda</option>
-                <option>Dehiwala</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Media Upload */}
-        <div className="space-y-4 pb-8">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2 flex items-center gap-2">
-            <UploadCloud size={16} /> Photos
-          </h3>
-          
-          <div className="flex justify-center rounded-lg border border-dashed border-slate-300 px-6 py-8">
-            <div className="text-center">
-              <UploadCloud className="mx-auto h-12 w-12 text-slate-300" aria-hidden="true" />
-              <div className="mt-4 flex text-sm leading-6 text-slate-600 justify-center">
-                <label className="relative cursor-pointer rounded-md bg-white font-semibold text-brand-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-brand-600 focus-within:ring-offset-2 hover:text-brand-500">
-                  <span>Upload a file</span>
-                  <input type="file" className="sr-only" disabled={mode === "view"} multiple />
-                </label>
-                <p className="pl-1">or drag and drop</p>
+            {dynamicAttributes.length > 0 && (
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
+                <h3 className="text-sm font-semibold text-slate-700 border-b border-slate-200 pb-2">Category Specific Details</h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {dynamicAttributes.map((attr: any, index: number) => {
+                    const fieldName = `attributes.${attr.name}` as const;
+                    
+                    return (
+                      <div key={index}>
+                        <label className="mb-1 block text-sm font-medium text-slate-700">
+                          {attr.name} {attr.required && "*"}
+                        </label>
+                        
+                        {attr.type === "select" ? (
+                          <select
+                            disabled={mode === "view" || isSubmitting}
+                            {...register(fieldName)}
+                            required={attr.required}
+                            className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
+                          >
+                            <option value="">Select...</option>
+                            {attr.options?.split(',').map((opt: string) => (
+                              <option key={opt.trim()} value={opt.trim()}>{opt.trim()}</option>
+                            ))}
+                          </select>
+                        ) : attr.type === "boolean" ? (
+                          <div className="flex items-center gap-2 pt-2">
+                            <input
+                              type="checkbox"
+                              disabled={mode === "view" || isSubmitting}
+                              {...register(fieldName)}
+                              className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
+                            />
+                            <span className="text-sm text-slate-600">Yes</span>
+                          </div>
+                        ) : (
+                          <input
+                            type={attr.type === "number" ? "number" : "text"}
+                            disabled={mode === "view" || isSubmitting}
+                            {...register(fieldName)}
+                            required={attr.required}
+                            className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <p className="text-xs leading-5 text-slate-500">PNG, JPG, GIF up to 10MB</p>
+            )}
+
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="isFeatured"
+                disabled={mode === "view" || isSubmitting}
+                {...register("isFeatured")}
+                className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 disabled:opacity-50"
+              />
+              <label htmlFor="isFeatured" className="text-sm font-medium text-slate-700">
+                Mark as Featured Ad
+              </label>
             </div>
+
           </div>
         </div>
-      </div>
-      
-      {/* Action Buttons */}
-      {mode !== "view" && (
-        <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 bg-white p-4 shadow-sm flex items-center justify-end gap-3 z-10">
-          <button
-            onClick={onClose}
-            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Cancel
-          </button>
-          <button className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
-            {mode === "add" ? "Publish Ad" : "Save Changes"}
-          </button>
-        </div>
-      )}
+
+        {/* Action Buttons */}
+        {mode !== "view" && (
+          <div className="mt-8 flex items-center justify-end gap-3 border-t border-slate-200 pt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50 min-w-[120px]"
+            >
+              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : mode === "add" ? "Post Ad" : "Save Changes"}
+            </button>
+          </div>
+        )}
+      </form>
     </Sidepanel>
   );
 }

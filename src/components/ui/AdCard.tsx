@@ -4,6 +4,7 @@ import React from "react";
 
 interface AdCardProps {
   id: string;
+  slug?: string;
   title: string;
   price: string;
   location: string;
@@ -16,6 +17,7 @@ interface AdCardProps {
 
 export default function AdCard({
   id,
+  slug,
   title,
   price,
   location,
@@ -27,8 +29,10 @@ export default function AdCard({
 }: AdCardProps) {
   const isList = viewMode === "list";
   
+  const linkHref = slug ? `/ad/${slug}` : `/ad/${id}`;
+  
   return (
-    <Link href={`/ad/${id}`} className={`group block ${isList ? "w-full" : "h-full"}`}>
+    <Link href={linkHref} className={`group block ${isList ? "w-full" : "h-full"}`}>
       <div className={`relative flex overflow-hidden rounded-2xl bg-card shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-hover border border-border/50 ${isList ? "flex-col sm:flex-row h-auto sm:h-48" : "flex-col h-full"}`}>
         {/* Image Container */}
         <div className={`relative overflow-hidden bg-gray-100 shrink-0 ${isList ? "w-full aspect-[4/3] sm:w-64 sm:aspect-auto sm:h-full" : "w-full aspect-[4/3]"}`}>
