@@ -40,15 +40,16 @@ export default function TrustSafety() {
             <Link 
               key={policy.title} 
               href={policy.link}
-              className="group flex flex-col items-center rounded-2xl bg-gray-50/80 p-8 text-center transition-all hover:bg-gray-100 border border-border/40"
+              className="group relative flex flex-col items-center overflow-hidden rounded-3xl bg-gray-900/80 border border-gray-800 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,0,0,0.2)] hover:border-gray-700"
             >
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm transition-colors group-hover:bg-brand-50 group-hover:text-brand-600">
+              <div className="absolute top-0 left-0 h-1.5 w-full bg-gradient-to-r from-brand-400 to-brand-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/5 text-white shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-white/10 group-hover:shadow-md">
                 {policy.icon}
               </div>
-              <h3 className="mb-2 font-heading text-lg font-bold text-foreground">
+              <h3 className="mb-3 font-heading text-xl font-bold text-white transition-colors group-hover:text-brand-400">
                 {policy.title}
               </h3>
-              <p className="text-sm text-foreground/70">
+              <p className="text-base leading-relaxed text-gray-400">
                 {policy.description}
               </p>
             </Link>

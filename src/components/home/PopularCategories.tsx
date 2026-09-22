@@ -1,5 +1,6 @@
 import Link from "next/link";
 import React from "react";
+import Image from "next/image";
 
 const categories = [
   { id: "vehicles", name: "Vehicles", count: "12,450", icon: "Car" },
@@ -21,20 +22,29 @@ const IconMap: Record<string, React.ReactNode> = {
 
 export default function PopularCategories() {
   return (
-    <section className="py-20 bg-gray-50/50">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="relative py-20 overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/pexels-naveen-annam-734127-2002431.jpg"
+          alt="Popular Categories Background"
+          fill
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-green-950/50 backdrop-blur-[2px]" />
+      </div>
+      <div className="container relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <h2 className="mb-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="mb-2 font-heading text-3xl font-bold text-white sm:text-4xl">
               Popular Categories
             </h2>
-            <p className="text-foreground/60 max-w-2xl text-lg">
+            <p className="max-w-2xl text-lg text-white/80">
               Browse through our most active markets and find exactly what you're looking for.
             </p>
           </div>
           <Link
             href="/categories"
-            className="group inline-flex items-center gap-1 font-medium text-brand-600 hover:text-brand-700 transition-colors"
+            className="group inline-flex items-center gap-1 font-medium text-brand-400 hover:text-brand-300 transition-colors"
           >
             View all categories
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="m9 18 6-6-6-6"/></svg>

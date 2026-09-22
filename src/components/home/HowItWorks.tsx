@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 export default function HowItWorks() {
   const steps = [
@@ -23,12 +24,21 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="py-24 bg-gray-50/50">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="mb-4 font-heading text-3xl font-bold text-foreground sm:text-4xl">
+    <section className="relative py-24 overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/pexels-perqued-13203188.jpg"
+          alt="How It Works Background"
+          fill
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-green-950/50 backdrop-blur-[2px]" />
+      </div>
+      <div className="container relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="mb-4 font-heading text-3xl font-bold text-white sm:text-4xl">
           How it works
         </h2>
-        <p className="mx-auto mb-16 max-w-2xl text-lg text-foreground/60">
+        <p className="mx-auto mb-16 max-w-2xl text-lg text-white/80">
           Buying and selling on Yaka.lk is simpler and safer than ever before. Just follow these three easy steps.
         </p>
 
@@ -41,11 +51,11 @@ export default function HowItWorks() {
               <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-xl shadow-brand-500/10 border border-border/50 text-brand-500">
                 {step.icon}
               </div>
-              <div className="mb-2 text-sm font-bold text-brand-500">STEP {step.id}</div>
-              <h3 className="mb-3 font-heading text-xl font-bold text-foreground">
+              <div className="mb-2 text-sm font-bold text-brand-400">STEP {step.id}</div>
+              <h3 className="mb-3 font-heading text-xl font-bold text-white">
                 {step.title}
               </h3>
-              <p className="text-foreground/70 text-center max-w-xs">
+              <p className="text-center max-w-xs text-white/70">
                 {step.description}
               </p>
             </div>

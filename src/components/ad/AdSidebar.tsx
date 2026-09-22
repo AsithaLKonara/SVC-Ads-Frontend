@@ -1,54 +1,47 @@
 import React from "react";
-import Image from "next/image";
-import Link from "next/link";
 
-export interface SellerData {
-  name: string;
-  avatar: string;
-  joinedDate: string;
-  isVerified: boolean;
+export interface AdSidebarData {
+  title: string;
+  price: string;
+  location: string;
+  postedDate: string;
+  views: number;
   phone: string;
 }
 
-export default function SellerCard({ seller }: { seller: SellerData }) {
+export default function AdSidebar({ data }: { data: AdSidebarData }) {
   return (
-    <div className="flex flex-col gap-4">
-      {/* Main Seller Card */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <h3 className="mb-4 font-heading text-sm font-semibold uppercase tracking-wider text-foreground/50">
-          Seller Information
-        </h3>
-        
-        <div className="mb-6 flex items-center gap-4">
-          <div className="relative h-16 w-16 overflow-hidden rounded-full bg-muted">
-            {seller.avatar ? (
-              <Image src={seller.avatar} alt={seller.name} fill className="object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-brand-100 text-xl font-bold text-brand-700">
-                {seller.name.charAt(0)}
-              </div>
-            )}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h4 className="font-heading text-lg font-bold text-foreground">{seller.name}</h4>
-              {seller.isVerified && (
-                <svg className="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0 1 12 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 0 1 3.498 1.307 4.491 4.491 0 0 1 1.307 3.497A4.49 4.49 0 0 1 21.75 12a4.49 4.49 0 0 1-1.549 3.397 4.491 4.491 0 0 1-1.307 3.497 4.491 4.491 0 0 1-3.497 1.307A4.49 4.49 0 0 1 12 21.75a4.49 4.49 0 0 1-3.397-1.549 4.49 4.49 0 0 1-3.498-1.306 4.491 4.491 0 0 1-1.307-3.498A4.49 4.49 0 0 1 2.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 0 1 1.307-3.497 4.49 4.49 0 0 1 3.497-1.307Zm7.007 6.387a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clipRule="evenodd" /></svg>
-              )}
-            </div>
-            <p className="text-sm text-foreground/60">Member since {seller.joinedDate}</p>
+    <div className="flex flex-col gap-6">
+      {/* Mobile-hidden Desktop Header (Title, Price, Stats) */}
+      <div className="hidden lg:block rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-sm font-medium text-foreground/60">{data.postedDate}</span>
+          <span className="flex items-center gap-1 text-sm text-foreground/60">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            {data.views} views
+          </span>
+        </div>
+        <h1 className="mb-4 font-heading text-2xl font-bold text-foreground">
+          {data.title}
+        </h1>
+        <div className="flex flex-col gap-2 border-t border-border/50 pt-4">
+          <span className="text-3xl font-extrabold text-brand-600">Rs {data.price}</span>
+          <div className="flex items-center gap-1 text-foreground/70">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            {data.location}
           </div>
         </div>
+      </div>
 
-        <Link href={`/seller/${seller.name.toLowerCase().replace(/ /g, '-')}`} className="mb-6 block text-center text-sm font-semibold text-brand-600 hover:underline">
-          View Profile & Other Ads
-        </Link>
-
-        {/* Contact Actions (Hidden on Mobile, replaced by sticky bar) */}
-        <div className="hidden flex-col gap-3 md:flex">
+      {/* Contact Actions */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="mb-4 font-heading text-sm font-semibold uppercase tracking-wider text-foreground/50">
+          Contact Admin
+        </h3>
+        <div className="flex flex-col gap-3">
           <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 py-3 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-lg">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            Call {seller.phone}
+            Call {data.phone}
           </button>
           
           <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-3 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-[#20b858] hover:shadow-lg">

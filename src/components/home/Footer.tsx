@@ -1,10 +1,20 @@
 import Link from "next/link";
 import React from "react";
+import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-950 text-gray-400 py-16 border-t border-gray-900">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <footer className="relative bg-gray-950 text-gray-400 py-16 border-t border-gray-900 overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/pexels-the-ghazi-2152398165-32570635.jpg"
+          alt="Footer Background"
+          fill
+          className="object-cover object-center opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/90 to-gray-950/80" />
+      </div>
+      <div className="container relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5 mb-12">
           
           {/* Brand Col */}

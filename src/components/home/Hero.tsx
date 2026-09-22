@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,20 @@ export default function Hero() {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
+
+  const heroImages = [
+    "/images/pexels-luizavenanci-29334668.jpg",
+    "/images/pexels-jakub-pabis-147246622-19963719.jpg",
+    "/images/pexels-the-ghazi-2152398165-33747708.jpg",
+  ];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,15 +39,20 @@ export default function Hero() {
 
   return (
     <section className="relative flex min-h-[600px] w-full flex-col items-center justify-center overflow-hidden py-24 md:min-h-[700px]">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/hero-bg.jpg"
-          alt="Sri Lankan marketplace"
-          fill
-          priority
-          className="object-cover object-center"
-        />
+      {/* Background Image Carousel */}
+      <div className="absolute inset-0 z-0 bg-gray-900">
+        {heroImages.map((src, index) => (
+          <Image
+            key={src}
+            src={src}
+            alt={`Sri Lankan marketplace ${index + 1}`}
+            fill
+            priority={index === 0}
+            className={`object-cover object-center transition-opacity duration-1000 ${
+              index === currentImageIndex ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        ))}
         {/* Gradient Overlay for Text Readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
       </div>

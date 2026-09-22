@@ -1,5 +1,6 @@
 import Link from "next/link";
 import React from "react";
+import Image from "next/image";
 import AdCard from "../ui/AdCard";
 
 // Mock Data
@@ -88,20 +89,29 @@ const latestAds = [
 
 export default function LatestAds() {
   return (
-    <section className="py-20 bg-gray-50/50">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="relative py-20 overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/pexels-nikitapishchugin-29282319.jpg"
+          alt="Latest Ads Background"
+          fill
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-green-950/50 backdrop-blur-[2px]" />
+      </div>
+      <div className="container relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <h2 className="mb-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="mb-2 font-heading text-3xl font-bold text-white sm:text-4xl">
               Fresh Recommendations
             </h2>
-            <p className="text-foreground/60 max-w-2xl text-lg">
+            <p className="max-w-2xl text-lg text-white/80">
               The latest listings added to our marketplace today.
             </p>
           </div>
           <Link
             href="/ads"
-            className="group inline-flex items-center gap-1 font-medium text-brand-600 hover:text-brand-700 transition-colors"
+            className="group inline-flex items-center gap-1 font-medium text-brand-400 hover:text-brand-300 transition-colors"
           >
             View all ads
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
@@ -117,7 +127,7 @@ export default function LatestAds() {
         <div className="mt-12 flex justify-center">
           <Link
             href="/ads"
-            className="inline-flex h-12 items-center justify-center rounded-xl border-2 border-border bg-white px-8 font-medium text-foreground hover:border-brand-500 hover:text-brand-600 transition-colors"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-brand-500 px-8 font-medium text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-lg"
           >
             Load More Listings
           </Link>
