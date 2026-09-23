@@ -35,7 +35,7 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.append("q", searchQuery.trim());
     if (category) params.append("category", category);
-    if (location) params.append("location", location);
+    if (location) params.append("district", location);
     
     if (params.toString()) {
       router.push(`/search?${params.toString()}`);

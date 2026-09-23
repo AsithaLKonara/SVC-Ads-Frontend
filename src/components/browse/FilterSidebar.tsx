@@ -245,9 +245,39 @@ export default function FilterSidebar({ onClose, categories = [], locations = []
       </div>
 
       {/* Mobile Footer Actions (Hidden on Desktop) */}
-      <div className="border-t border-border/50 p-4 lg:hidden">
-        <button onClick={onClose} className="w-full rounded-xl bg-brand-500 py-3 font-semibold text-white shadow hover:bg-brand-600 active:scale-95 transition-all">
+      <div className="border-t border-border/50 p-4 lg:hidden flex gap-2">
+        <button 
+          onClick={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            const q = params.get('q');
+            const newParams = new URLSearchParams();
+            if (q) newParams.set('q', q);
+            router.push(`${pathname}?${newParams.toString()}`);
+            if (onClose) onClose();
+          }} 
+          className="w-1/3 rounded-xl border border-border bg-card py-3 font-semibold text-foreground shadow-sm hover:bg-foreground/5 active:scale-95 transition-all"
+        >
+          Reset
+        </button>
+        <button onClick={onClose} className="flex-1 rounded-xl bg-brand-500 py-3 font-semibold text-white shadow hover:bg-brand-600 active:scale-95 transition-all">
           Apply Filters
+        </button>
+      </div>
+
+      {/* Desktop Reset Button */}
+      <div className="hidden lg:block border-t border-border/50 p-4 mt-auto">
+        <button 
+          onClick={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            const q = params.get('q');
+            const newParams = new URLSearchParams();
+            if (q) newParams.set('q', q);
+            router.push(`${pathname}?${newParams.toString()}`);
+          }} 
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-card py-2.5 text-sm font-semibold text-foreground shadow-sm hover:bg-foreground/5 transition-all"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Reset Filters
         </button>
       </div>
     </div>

@@ -11,38 +11,59 @@ export default function AdsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   
   // Sidepanel state
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [panelMode, setPanelMode] = useState<"view" | "add" | "edit">("add");
   const [selectedAd, setSelectedAd] = useState<Ad | undefined>(undefined);
 
-  const fetchData = async () => {
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const fetchAds = async (query: string = "") => {
     try {
       setIsLoading(true);
-      const [adsRes, catsData] = await Promise.all([
-        adService.getAds({}, { cache: 'no-store' }),
-        categoryService.getAdminCategories()
-      ]);
+      const params: any = {};
+      if (query.trim()) params.q = query.trim();
+      
+      const adsRes = await adService.getAds(params, { cache: 'no-store' });
       setAds(adsRes.data);
-      setCategories(catsData);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      console.error("Failed to fetch ads:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const catsData = await categoryService.getAdminCategories();
+      setCategories(catsData);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    }
+  };
+
   useEffect(() => {
-    fetchData();
+    fetchCategories();
   }, []);
+
+  useEffect(() => {
+    fetchAds(debouncedSearchQuery);
+  }, [debouncedSearchQuery]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this ad?")) return;
     
     try {
       await adService.deleteAd(id);
-      fetchData();
+      fetchAds(debouncedSearchQuery);
     } catch (error: any) {
       alert(error.message || "Failed to delete ad");
     }
@@ -52,7 +73,7 @@ export default function AdsPage() {
     try {
       const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
       await adService.toggleAdStatus(id, newStatus);
-      fetchData();
+      fetchAds(debouncedSearchQuery);
     } catch (error: any) {
       alert(error.message || "Failed to toggle status");
     }
@@ -70,10 +91,7 @@ export default function AdsPage() {
     setIsPanelOpen(true);
   };
 
-  const filteredAds = ads.filter((ad) => 
-    ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ad.district.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredAds = ads;
 
   return (
     <div className="space-y-6">
@@ -102,7 +120,7 @@ export default function AdsPage() {
           </div>
           <input 
             type="text" 
-            placeholder="Search ads..." 
+            placeholder="Search all ads..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="block w-full sm:w-64 rounded-md border border-slate-300 bg-white py-1.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
@@ -198,7 +216,7 @@ export default function AdsPage() {
         categories={categories}
         onSuccess={() => {
           setIsPanelOpen(false);
-          fetchData();
+          fetchAds(debouncedSearchQuery);
         }}
       />
     </div>
