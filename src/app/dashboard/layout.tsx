@@ -19,6 +19,7 @@ import {
   X,
   ShieldAlert,
   MessageSquare,
+  Settings,
 } from "lucide-react";
 import { io } from "socket.io-client";
 import { fetchWithAuth } from "@/services/api";
@@ -365,6 +366,22 @@ export default function DashboardLayout({
               </Link>
             </>
           )}
+
+          <div className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Preferences
+          </div>
+          <Link
+            href="/dashboard/settings"
+            onClick={closeOnMobile}
+            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${
+              pathname.startsWith("/dashboard/settings")
+                ? "bg-brand-50 text-brand-700"
+                : "text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            <Settings size={18} />
+            Settings
+          </Link>
         </nav>
 
         {/* Sidebar footer ------------------------------------------------- */}
