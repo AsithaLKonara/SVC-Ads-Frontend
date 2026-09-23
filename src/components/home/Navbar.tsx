@@ -55,9 +55,10 @@ export default function Navbar() {
               </div>
               <input 
                 type="text" 
+                aria-label="Search properties"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full rounded-full border border-border bg-background p-2.5 pl-10 text-sm text-foreground outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" 
+                className="block w-full rounded-full border border-border bg-background p-2.5 pl-10 text-sm text-foreground outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus-visible:ring-2 focus-visible:ring-brand-500/20" 
                 placeholder="Search for anything (e.g. iPhone, Toyota, House)..." 
               />
               <button type="submit" className="absolute inset-y-1.5 right-1.5 rounded-full bg-brand-500 px-4 text-xs font-bold text-white shadow hover:bg-brand-600 transition-colors">
@@ -67,7 +68,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden flex items-center justify-center rounded-full p-2 text-foreground/70 hover:bg-black/5 transition-colors">
+          <button aria-label="Toggle mobile menu" className="md:hidden flex items-center justify-center rounded-full p-2 text-foreground/70 hover:bg-black/5 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"

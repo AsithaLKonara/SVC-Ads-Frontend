@@ -34,15 +34,17 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
         {/* Navigation Arrows (if multiple images) */}
         {images.length > 1 && (
           <>
-            <button 
+            <button
+              aria-label="Previous image"
               onClick={() => setActiveIndex(activeIndex === 0 ? images.length - 1 : activeIndex - 1)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md hover:bg-white/40 transition-colors"
+              className="absolute left-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md hover:bg-white/40 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             </button>
-            <button 
+            <button
+              aria-label="Next image"
               onClick={() => setActiveIndex(activeIndex === images.length - 1 ? 0 : activeIndex + 1)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md hover:bg-white/40 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md hover:bg-white/40 transition-colors focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
             </button>
@@ -56,8 +58,9 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           {images.map((img, idx) => (
             <button
               key={idx}
+              aria-label={`View image ${idx + 1}`}
               onClick={() => setActiveIndex(idx)}
-              className={`relative h-20 w-24 shrink-0 overflow-hidden rounded-lg transition-all ${
+              className={`relative h-20 w-24 shrink-0 overflow-hidden rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none ${
                 activeIndex === idx ? "ring-2 ring-brand-500 ring-offset-2 ring-offset-background" : "opacity-60 hover:opacity-100"
               }`}
             >

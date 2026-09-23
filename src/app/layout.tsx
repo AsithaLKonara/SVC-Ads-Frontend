@@ -29,6 +29,9 @@ export default function RootLayout({
       className={`${inter.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:p-4 focus:bg-brand-500 focus:text-white focus:font-bold">
+          Skip to main content
+        </a>
         <TrafficTrackerClient />
         {children}
       </body>
