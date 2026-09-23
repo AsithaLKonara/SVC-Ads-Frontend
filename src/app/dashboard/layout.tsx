@@ -370,25 +370,8 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          {/* Right side */}
-          <div className="ml-4 flex shrink-0 items-center gap-4">
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="relative rounded-md p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-            >
-              <Bell size={20} />
-              <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                3
-              </span>
-            </button>
-
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-slate-100">
-              <span className="text-sm font-bold text-slate-600">
-                {user.name?.charAt(0)?.toUpperCase() ?? "A"}
-              </span>
-            </div>
-          </div>
+          {/* Right side intentionally empty */}
+          <div className="ml-4" />
         </header>
 
         {/* Page content --------------------------------------------------- */}
