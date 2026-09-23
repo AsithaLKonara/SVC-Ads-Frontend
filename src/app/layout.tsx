@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Commercially Valuable Lands in Sri Lanka. Invest Today. Build Tomorrow.",
 };
 
+import TrafficTrackerClient from "@/components/analytics/TrafficTrackerClient";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,10 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${outfit.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <TrafficTrackerClient />
+        {children}
+      </body>
     </html>
   );
 }

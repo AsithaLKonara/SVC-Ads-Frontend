@@ -37,7 +37,7 @@ export default async function AdPage({
     price: rawAd.price.toLocaleString('en-US'),
     location: `${rawAd.city}, ${rawAd.district}`,
     postedDate: `Posted ${postedDate}`,
-    views: Math.floor(Math.random() * 1000) + 100, // Mock views for now
+    views: rawAd.views || 0,
     description: rawAd.description,
     attributes: {
       Condition: rawAd.condition || "Used",

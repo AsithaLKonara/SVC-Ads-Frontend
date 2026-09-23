@@ -19,6 +19,7 @@ export interface Ad {
   userId: string;
   user?: { id: string; name: string; email?: string };
   status: 'ACTIVE' | 'INACTIVE';
+  views: number;
   createdAt: string;
   updatedAt: string;
 }
