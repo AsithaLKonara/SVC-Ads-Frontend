@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 export interface AdSidebarData {
@@ -39,7 +41,7 @@ export default function AdSidebar({ data }: { data: AdSidebarData }) {
       {/* Contact Actions */}
       <div className="py-6 border-t border-border/50">
         <h3 className="mb-4 font-heading text-sm font-semibold uppercase tracking-wider text-foreground/50">
-          Contact Admin
+          Contact
         </h3>
         <div className="flex flex-col gap-3">
           <a href={`tel:${data.phone.replace(/[^0-9+]/g, '')}`} className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 py-3 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-lg">
@@ -50,18 +52,16 @@ export default function AdSidebar({ data }: { data: AdSidebarData }) {
       </div>
 
       {/* Secondary Actions */}
-      <div className="flex items-center justify-between py-6 border-t border-border/50">
-        <button className="flex flex-col items-center gap-1 text-xs font-medium text-foreground/70 hover:text-brand-500">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-          Save Ad
-        </button>
-        <button className="flex flex-col items-center gap-1 text-xs font-medium text-foreground/70 hover:text-brand-500">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
-          Share
-        </button>
-        <button className="flex flex-col items-center gap-1 text-xs font-medium text-foreground/70 hover:text-red-500">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-          Report
+      <div className="flex items-center justify-center py-6 border-t border-border/50">
+        <button 
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href);
+            alert('URL Copied to clipboard!');
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border/60 bg-background py-3 text-sm font-semibold text-foreground/80 shadow-sm transition-all hover:bg-card hover:text-brand-500"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+          Share this Ad
         </button>
       </div>
     </div>
