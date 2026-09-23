@@ -76,7 +76,7 @@ export default function LoginPage() {
       <main className="flex min-h-[calc(100vh-64px)] flex-col lg:flex-row">
         {/* Left Side: Image / Branding */}
         <div className="relative hidden w-full bg-brand-900 lg:block lg:w-1/2">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop')] bg-cover bg-center opacity-40"></div>
+          <div className="absolute inset-0 bg-[url('/images/hero-bg.jpg')] bg-cover bg-center opacity-40"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-brand-900 via-brand-900/60 to-transparent"></div>
           
           <div className="relative z-10 flex h-full flex-col items-center justify-center p-12 text-center">

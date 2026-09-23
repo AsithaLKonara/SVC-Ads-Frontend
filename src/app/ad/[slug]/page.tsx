@@ -68,7 +68,7 @@ export default async function AdPage({
     },
     images: rawAd.images && rawAd.images.length > 0 
       ? rawAd.images 
-      : ["https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=1200&q=80"], // Fallback
+      : ["/images/placeholder.jpg"], // Fallback
     seller: {
       name: rawAd.user?.name || "Unknown Seller",
       avatar: "",

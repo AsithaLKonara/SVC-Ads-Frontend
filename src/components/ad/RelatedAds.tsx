@@ -38,7 +38,7 @@ export default async function RelatedAds({
       title: ad.title,
       price: ad.price.toLocaleString('en-US'),
       location: `${ad.city}, ${ad.district}`,
-      image: ad.images && ad.images.length > 0 ? ad.images[0] : 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80',
+      image: ad.images && ad.images.length > 0 ? ad.images[0] : '/images/placeholder.jpg',
       postedTime,
       condition: ad.condition || 'Used',
       isFeatured: ad.isFeatured

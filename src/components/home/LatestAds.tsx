@@ -24,7 +24,7 @@ export default async function LatestAds() {
       title: ad.title,
       price: ad.price.toLocaleString('en-US'),
       location: `${ad.city}, ${ad.district}`,
-      image: ad.images && ad.images.length > 0 ? ad.images[0] : 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=800&q=80',
+      image: ad.images && ad.images.length > 0 ? ad.images[0] : '/images/placeholder.jpg',
       postedTime,
       condition: ad.condition || 'Used',
       isFeatured: ad.isFeatured
