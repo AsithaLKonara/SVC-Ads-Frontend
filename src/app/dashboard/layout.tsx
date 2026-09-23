@@ -17,6 +17,7 @@ import {
   LineChart,
   Menu,
   X,
+  ShieldAlert,
 } from "lucide-react";
 
 type User = {
@@ -287,6 +288,26 @@ export default function DashboardLayout({
               <AlertOctagon size={18} />
               Reports
             </Link>
+          )}
+
+          {isAdmin && (
+            <>
+              <div className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Security
+              </div>
+              <Link
+                href="/dashboard/audit-logs"
+                onClick={closeOnMobile}
+                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${
+                  pathname.startsWith("/dashboard/audit-logs")
+                    ? "bg-indigo-50 text-indigo-700"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <ShieldAlert size={18} />
+                Audit Logs
+              </Link>
+            </>
           )}
         </nav>
 
