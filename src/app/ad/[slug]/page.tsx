@@ -114,7 +114,11 @@ export default async function AdPage({
 
           </div>
 
-          <RelatedAds />
+          <RelatedAds 
+            currentAdId={ad.id} 
+            categorySlug={rawAd.category?.slug} 
+            categoryName={rawAd.category?.name} 
+          />
         </div>
       </main>
 

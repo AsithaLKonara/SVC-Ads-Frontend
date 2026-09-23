@@ -12,9 +12,9 @@ export interface AdSidebarData {
 
 export default function AdSidebar({ data }: { data: AdSidebarData }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col">
       {/* Mobile-hidden Desktop Header (Title, Price, Stats) */}
-      <div className="hidden lg:block rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="hidden lg:block pb-6">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-medium text-foreground/60">
             {data.postedDate} in <span className="text-brand-600 font-semibold">{data.categoryName}</span>
@@ -27,7 +27,7 @@ export default function AdSidebar({ data }: { data: AdSidebarData }) {
         <h1 className="mb-4 font-heading text-2xl font-bold text-foreground">
           {data.title}
         </h1>
-        <div className="flex flex-col gap-2 border-t border-border/50 pt-4">
+        <div className="flex flex-col gap-2 pt-2">
           <span className="text-3xl font-extrabold text-brand-600">Rs {data.price}</span>
           <div className="flex items-center gap-1 text-foreground/70">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -37,7 +37,7 @@ export default function AdSidebar({ data }: { data: AdSidebarData }) {
       </div>
 
       {/* Contact Actions */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="py-6 border-t border-border/50">
         <h3 className="mb-4 font-heading text-sm font-semibold uppercase tracking-wider text-foreground/50">
           Contact Admin
         </h3>
@@ -50,7 +50,7 @@ export default function AdSidebar({ data }: { data: AdSidebarData }) {
       </div>
 
       {/* Secondary Actions */}
-      <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-center justify-between py-6 border-t border-border/50">
         <button className="flex flex-col items-center gap-1 text-xs font-medium text-foreground/70 hover:text-brand-500">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
           Save Ad
