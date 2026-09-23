@@ -2,6 +2,7 @@ import React from "react";
 import AdCard from "@/components/ui/AdCard";
 import Link from "next/link";
 import { adService } from "@/services/adService";
+import { getRelativeTime } from "@/utils/format";
 
 export default async function RelatedAds({ 
   categorySlug, 
@@ -29,8 +30,7 @@ export default async function RelatedAds({
   if (ads.length === 0) return null;
 
   const mappedAds = ads.map(ad => {
-    const d = new Date(ad.createdAt);
-    const postedTime = `${d.getUTCDate().toString().padStart(2, '0')}/${(d.getUTCMonth() + 1).toString().padStart(2, '0')}/${d.getUTCFullYear()}`;
+    const postedTime = getRelativeTime(ad.createdAt);
     
     return {
       id: ad.id,

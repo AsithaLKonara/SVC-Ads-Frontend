@@ -9,6 +9,7 @@ import AdSidebar from "@/components/ad/AdSidebar";
 import StickyMobileContact from "@/components/ad/StickyMobileContact";
 import RelatedAds from "@/components/ad/RelatedAds";
 import { adService, Ad } from "@/services/adService";
+import { getRelativeTime } from "@/utils/format";
 
 export default async function AdPage({
   params,
@@ -27,8 +28,7 @@ export default async function AdPage({
 
   if (!rawAd) notFound();
 
-  const d = new Date(rawAd.createdAt);
-  const postedDate = `${d.getUTCDate().toString().padStart(2, '0')}/${(d.getUTCMonth() + 1).toString().padStart(2, '0')}/${d.getUTCFullYear()}`;
+  const postedDate = getRelativeTime(rawAd.createdAt);
 
   // Map the backend Ad model to the frontend expected data structure
   const ad = {
@@ -36,7 +36,7 @@ export default async function AdPage({
     title: rawAd.title,
     price: rawAd.price.toLocaleString('en-US'),
     location: `${rawAd.city}, ${rawAd.district}`,
-    postedDate: `Posted on ${postedDate}`,
+    postedDate: `Posted ${postedDate}`,
     views: Math.floor(Math.random() * 1000) + 100, // Mock views for now
     description: rawAd.description,
     attributes: {
