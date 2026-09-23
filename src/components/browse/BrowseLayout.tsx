@@ -6,7 +6,8 @@ import AdCard from "@/components/ui/AdCard";
 import Link from "next/link";
 import { Category } from "@/services/categoryService";
 
-import { Ad } from "@/services/adService";
+import { Ad, PaginatedAds } from "@/services/adService";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 // Dictionary for Dynamic Category Content
 const CATEGORY_DATA: Record<string, { desc: string; subcategories: string[]; seoContent: { text: string; faqs: { q: string; a: string }[] } }> = {
@@ -55,10 +56,14 @@ interface BrowseLayoutProps {
   subcategory?: string;
   searchQuery?: string;
   categories?: Category[];
-  initialAds?: Ad[];
+  initialData?: PaginatedAds;
+  locations?: string[];
 }
 
-export default function BrowseLayout({ category, subcategory, searchQuery, categories = [], initialAds = [] }: BrowseLayoutProps) {
+export default function BrowseLayout({ category, subcategory, searchQuery, categories = [], initialData, locations = [] }: BrowseLayoutProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -82,7 +87,8 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
   
   const catData = category ? getCategoryData(category.toLowerCase()) : null;
 
-  const mappedAds = initialAds.map(ad => {
+  const ads = initialData?.data || [];
+  const mappedAds = ads.map(ad => {
     const d = new Date(ad.createdAt);
     const postedTime = `${d.getUTCDate().toString().padStart(2, '0')}/${(d.getUTCMonth() + 1).toString().padStart(2, '0')}/${d.getUTCFullYear()}`;
     
@@ -171,15 +177,18 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
                 <div>
                   <h3 className="mb-3 font-heading text-sm font-bold uppercase tracking-wider text-foreground/50">Explore Subcategories</h3>
                   <div className="flex flex-wrap gap-3">
-                    {catData.subcategories.map(sub => (
+                    {categories.find(c => c.slug === category)?.children?.map(sub => (
                       <Link 
-                        key={sub} 
-                        href={`/${category}/${sub.toLowerCase().replace(/ /g, '-')}`}
+                        key={sub.id} 
+                        href={`/${category}/${sub.slug}`}
                         className="rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:border-brand-500 hover:text-brand-500 transition-colors shadow-sm"
                       >
-                        {sub}
+                        {sub.name}
                       </Link>
                     ))}
+                    {(!categories.find(c => c.slug === category)?.children || categories.find(c => c.slug === category)?.children?.length === 0) && (
+                      <span className="text-sm text-foreground/50">No subcategories available.</span>
+                    )}
                   </div>
                 </div>
               )}
@@ -195,7 +204,7 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
           <aside className="hidden w-64 shrink-0 lg:block">
             <div className="sticky top-24 pb-8">
               <h2 className="mb-4 font-heading text-lg font-bold text-foreground">Refine Search</h2>
-              <FilterSidebar categories={categories} />
+              <FilterSidebar categories={categories} locations={locations} />
             </div>
           </aside>
 
@@ -207,7 +216,7 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
                 onClick={() => setIsMobileFiltersOpen(false)}
               />
               <div className="absolute inset-y-0 left-0 w-[280px] sm:w-[320px] bg-background shadow-2xl overflow-hidden animate-in slide-in-from-left duration-300">
-                <FilterSidebar onClose={() => setIsMobileFiltersOpen(false)} categories={categories} />
+                <FilterSidebar onClose={() => setIsMobileFiltersOpen(false)} categories={categories} locations={locations} />
               </div>
             </div>
           )}
@@ -252,44 +261,63 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
             )}
 
             {/* Pagination */}
-            <div className="mt-12 flex items-center justify-center gap-2">
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground/50 hover:bg-background transition-colors disabled:opacity-50" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-              </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm font-semibold">1</button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground/80 hover:bg-background transition-colors font-semibold">2</button>
-              <span className="flex h-10 w-10 items-center justify-center text-foreground/40">...</span>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground/80 hover:bg-background transition-colors font-semibold">12</button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground/80 hover:bg-background transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              </button>
-            </div>
+            {initialData && initialData.totalPages > 1 && (
+              <div className="mt-12 flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set('page', String(initialData.page - 1));
+                    router.push(`${pathname}?${params.toString()}`);
+                  }}
+                  disabled={initialData.page <= 1}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground/50 hover:bg-background transition-colors disabled:opacity-50"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                
+                {Array.from({ length: initialData.totalPages }).map((_, i) => {
+                  const pageNum = i + 1;
+                  // Show current page, first, last, and pages around current
+                  if (pageNum === 1 || pageNum === initialData.totalPages || (pageNum >= initialData.page - 1 && pageNum <= initialData.page + 1)) {
+                    return (
+                      <button 
+                        key={pageNum}
+                        onClick={() => {
+                          const params = new URLSearchParams(searchParams.toString());
+                          params.set('page', String(pageNum));
+                          router.push(`${pathname}?${params.toString()}`);
+                        }}
+                        className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                          initialData.page === pageNum 
+                            ? 'bg-brand-500 text-white shadow-sm font-semibold' 
+                            : 'border border-border bg-card text-foreground/80 hover:bg-background transition-colors font-semibold'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (pageNum === initialData.page - 2 || pageNum === initialData.page + 2) {
+                    return <span key={pageNum} className="flex h-10 w-10 items-center justify-center text-foreground/40">...</span>;
+                  }
+                  return null;
+                })}
+
+                <button 
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set('page', String(initialData.page + 1));
+                    router.push(`${pathname}?${params.toString()}`);
+                  }}
+                  disabled={initialData.page >= initialData.totalPages}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground/80 hover:bg-background transition-colors disabled:opacity-50"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </div>
+            )}
 
           </div>
         </div>
-
-        {/* CATEGORY SEO CONTENT */}
-        {category && catData && (
-          <div className="container mx-auto max-w-7xl px-4 pt-20 sm:px-6 lg:px-8">
-            <div className="rounded-2xl bg-card border border-border p-8 lg:p-12">
-              <h2 className="mb-4 font-heading text-2xl font-bold text-foreground">About {formattedCategory} in Sri Lanka</h2>
-              <p className="mb-8 text-foreground/70 leading-relaxed max-w-4xl">{catData.seoContent.text}</p>
-              
-              <h3 className="mb-6 font-heading text-xl font-bold text-foreground">Frequently Asked Questions</h3>
-              <div className="grid gap-6 md:grid-cols-2 max-w-5xl">
-                {catData.seoContent.faqs.map((faq, i) => (
-                  <div key={i} className="rounded-xl bg-background p-6 border border-border/50">
-                    <h4 className="mb-2 font-bold text-foreground flex gap-2 items-start">
-                      <span className="text-brand-500 mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>
-                      {faq.q}
-                    </h4>
-                    <p className="text-sm text-foreground/70 pl-6">{faq.a}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
       </main>
     </div>
@@ -298,13 +326,28 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
 
 // Extracted helper for layout cleanliness
 function SortAndToggle({ viewMode, setViewMode, isSearch }: { viewMode: "grid" | "list", setViewMode: (mode: "grid"| "list") => void, isSearch?: boolean }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  
+  const currentSort = searchParams.get('sort') || (isSearch ? 'relevance' : 'newest');
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('sort', e.target.value);
+    // Reset to page 1 on sort change
+    params.set('page', '1');
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   return (
     <div className="flex items-center gap-4 shrink-0">
       <select 
         className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-        defaultValue={isSearch ? "relevance" : "newest"}
+        value={currentSort}
+        onChange={handleSortChange}
       >
-        <option value="relevance" className="bg-background">Sort by: Relevance</option>
+        {isSearch && <option value="relevance" className="bg-background">Sort by: Relevance</option>}
         <option value="newest" className="bg-background">Sort by: Newest</option>
         <option value="price-asc" className="bg-background">Price: Low to High</option>
         <option value="price-desc" className="bg-background">Price: High to Low</option>

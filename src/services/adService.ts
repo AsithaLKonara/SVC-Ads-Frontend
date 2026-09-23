@@ -23,11 +23,29 @@ export interface Ad {
   updatedAt: string;
 }
 
+export interface PaginatedAds {
+  data: Ad[];
+  total: number;
+  page: number;
+  totalPages: number;
+  limit: number;
+}
+
 export const adService = {
   // Public routes
-  async getAds(params?: Record<string, string>): Promise<Ad[]> {
-    const queryString = new URLSearchParams(params).toString();
-    const res = await fetch(`${API_URL}/ads${queryString ? `?${queryString}` : ''}`);
+  async getAds(params?: Record<string, string | string[]>, options?: RequestInit): Promise<PaginatedAds> {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach(v => searchParams.append(key, v));
+        } else if (value !== undefined) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    const res = await fetch(`${API_URL}/ads${queryString ? `?${queryString}` : ''}`, options);
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to fetch ads');
     return data;

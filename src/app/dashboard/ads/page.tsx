@@ -20,11 +20,11 @@ export default function AdsPage() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const [adsData, catsData] = await Promise.all([
-        adService.getAds(),
+      const [adsRes, catsData] = await Promise.all([
+        adService.getAds({}, { cache: 'no-store' }),
         categoryService.getAdminCategories()
       ]);
-      setAds(adsData);
+      setAds(adsRes.data);
       setCategories(catsData);
     } catch (error) {
       console.error("Failed to fetch data:", error);

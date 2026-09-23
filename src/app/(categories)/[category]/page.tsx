@@ -4,17 +4,20 @@ import BrowseLayout from "@/components/browse/BrowseLayout";
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 import { Category } from "@/services/categoryService";
-import { adService, Ad } from "@/services/adService";
+import { adService, Ad, PaginatedAds } from "@/services/adService";
 import { API_URL } from "@/services/api";
 
 export default async function CategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ category: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { category } = await params;
+  const sParams = await searchParams;
   let categories: Category[] = [];
-  let ads: Ad[] = [];
+  let adsData: PaginatedAds = { data: [], total: 0, page: 1, totalPages: 1, limit: 12 };
   let isValid = false;
 
   try {
@@ -38,10 +41,25 @@ export default async function CategoryPage({
 
   if (isValid) {
     try {
-      ads = await adService.getAds({ category, status: 'ACTIVE' });
+      const filterParams: Record<string, string | string[]> = { category, status: 'ACTIVE' };
+      const validKeys = ['district', 'city', 'minPrice', 'maxPrice', 'condition', 'q', 'sort', 'page', 'limit'];
+      for (const key of validKeys) {
+        if (sParams[key] !== undefined) {
+          filterParams[key] = sParams[key] as string | string[];
+        }
+      }
+      adsData = await adService.getAds(filterParams, { cache: 'no-store' });
     } catch (error) {
       console.error("Failed to fetch ads for category:", error);
     }
+  }
+
+  let locations: string[] = [];
+  try {
+    const stats = await adService.getLocationStats();
+    locations = stats.map(s => s.district);
+  } catch (error) {
+    console.error("Failed to fetch location stats:", error);
   }
 
   return (
@@ -50,7 +68,8 @@ export default async function CategoryPage({
       <BrowseLayout 
         category={category} 
         categories={categories} 
-        initialAds={ads}
+        initialData={adsData}
+        locations={locations}
       />
       <Footer />
     </>

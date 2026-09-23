@@ -6,7 +6,8 @@ import { adService, Ad } from "@/services/adService";
 export default async function FeaturedAds() {
   let ads: Ad[] = [];
   try {
-    ads = await adService.getAds({ isFeatured: 'true', limit: '4', status: 'ACTIVE' });
+    const res = await adService.getAds({ isFeatured: 'true', limit: '4', status: 'ACTIVE' });
+    ads = Array.isArray(res) ? res : (res.data || []);
   } catch (error) {
     console.error("Failed to fetch featured ads:", error);
   }

@@ -7,7 +7,9 @@ import { adService, Ad } from "@/services/adService";
 export default async function LatestAds() {
   let ads: Ad[] = [];
   try {
-    ads = await adService.getAds({ limit: '8', status: 'ACTIVE' });
+    const res = await adService.getAds({ limit: '8', status: 'ACTIVE' });
+    // Defensive check to handle both old API (returns array) and new API (returns PaginatedAds) during build transitions
+    ads = Array.isArray(res) ? res : (res.data || []);
   } catch (error) {
     console.error("Failed to fetch latest ads:", error);
   }
