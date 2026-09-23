@@ -3,10 +3,11 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
@@ -36,12 +37,30 @@ export default function Navbar() {
         </div>
 
         {/* Center Section: Navigation */}
-        <nav className="hidden md:flex items-center justify-center shrink-0">
+        <nav className="hidden md:flex items-center justify-center shrink-0 gap-6">
           <Link
             href="/ads"
-            className="text-sm font-medium text-foreground/80 hover:text-brand-600 transition-colors"
+            className={`text-sm font-bold transition-colors ${pathname === '/ads' ? 'text-brand-600' : 'text-foreground/80 hover:text-brand-600'}`}
           >
             All ads
+          </Link>
+          <Link
+            href="/how-it-works"
+            className={`text-sm font-bold transition-colors ${pathname === '/how-it-works' ? 'text-brand-600' : 'text-foreground/80 hover:text-brand-600'}`}
+          >
+            How It Works
+          </Link>
+          <Link
+            href="/safety"
+            className={`text-sm font-bold transition-colors ${pathname === '/safety' ? 'text-brand-600' : 'text-foreground/80 hover:text-brand-600'}`}
+          >
+            Safety Tips
+          </Link>
+          <Link
+            href="/contact"
+            className={`text-sm font-bold transition-colors ${pathname === '/contact' ? 'text-brand-600' : 'text-foreground/80 hover:text-brand-600'}`}
+          >
+            Contact
           </Link>
         </nav>
 

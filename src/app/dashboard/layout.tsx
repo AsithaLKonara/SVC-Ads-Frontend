@@ -18,7 +18,12 @@ import {
   Menu,
   X,
   ShieldAlert,
+  MessageSquare,
 } from "lucide-react";
+import { io } from "socket.io-client";
+import { fetchWithAuth } from "@/services/api";
+
+
 
 type User = {
   name: string;
@@ -39,6 +44,7 @@ export default function DashboardLayout({
 
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
   // ─────────────────────────────────────────────────────────────────────────
   // SIDEBAR STATE — single source of truth.
@@ -69,6 +75,35 @@ export default function DashboardLayout({
         return;
       }
       setUser(JSON.parse(userData));
+
+      // Fetch unread messages
+      fetchWithAuth("/messages/unread-count")
+        .then((res) => res.json())
+        .then((data: any) => {
+          if (data.count !== undefined) {
+            setUnreadMessagesCount(data.count);
+          }
+        })
+        .catch(console.error);
+        
+      // WebSocket for new messages
+      const socketUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+      const socket = io(socketUrl);
+      
+      socket.on("newMessage", () => {
+        setUnreadMessagesCount((prev) => prev + 1);
+      });
+
+      // Custom event for when a message is read in the messages page
+      const handleMessageRead = () => {
+        setUnreadMessagesCount((prev) => Math.max(0, prev - 1));
+      };
+      window.addEventListener("messageRead", handleMessageRead);
+
+      return () => {
+        socket.disconnect();
+        window.removeEventListener("messageRead", handleMessageRead);
+      };
     } catch {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
@@ -164,6 +199,7 @@ export default function DashboardLayout({
                 src="/logo.JPG"
                 alt="LAKLAND REALITY"
                 fill
+                sizes="32px"
                 className="rounded-lg object-cover"
               />
             </div>
@@ -274,6 +310,26 @@ export default function DashboardLayout({
               Users
             </Link>
           )}
+
+          <Link
+            href="/dashboard/messages"
+            onClick={closeOnMobile}
+            className={`mt-1 flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium ${
+              pathname.startsWith("/dashboard/messages")
+                ? "bg-brand-50 text-brand-700"
+                : "text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <MessageSquare size={18} />
+              Messages
+            </div>
+            {unreadMessagesCount > 0 && (
+              <span className="flex h-5 items-center justify-center rounded-full bg-brand-500 px-2 text-xs font-bold text-white">
+                {unreadMessagesCount}
+              </span>
+            )}
+          </Link>
 
           {isAdmin && (
             <Link

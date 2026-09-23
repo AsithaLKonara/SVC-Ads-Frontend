@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import Image from "next/image";
-import { Category } from "@/services/categoryService";
+import { Category, getCachedCategories } from "@/services/categoryService";
 import { API_URL } from "@/services/api";
 import * as LucideIcons from "lucide-react";
 
@@ -20,10 +20,7 @@ export default async function PopularCategories() {
   let categories: Category[] = [];
   
   try {
-    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
-    if (res.ok) {
-      categories = await res.json();
-    }
+    categories = await getCachedCategories();
   } catch (error) {
     console.error("Failed to fetch popular categories", error);
   }

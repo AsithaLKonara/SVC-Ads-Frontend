@@ -1,18 +1,15 @@
 import Link from "next/link";
 import React from "react";
 import Image from "next/image";
-import { Category } from "@/services/categoryService";
+import { Category, getCachedCategories } from "@/services/categoryService";
 import { API_URL } from "@/services/api";
 
 export default async function Footer() {
   let topCategories: Category[] = [];
   
   try {
-    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
-    if (res.ok) {
-      const categories: Category[] = await res.json();
-      topCategories = categories.slice(0, 4); // Only show top 4 in footer
-    }
+    const categories = await getCachedCategories();
+    topCategories = categories.slice(0, 4); // Only show top 4 in footer
   } catch (error) {
     console.error("Failed to fetch footer categories", error);
   }
@@ -39,6 +36,7 @@ export default async function Footer() {
                   src="/logo.JPG" 
                   alt="LAKLAND REALITY" 
                   fill
+                  sizes="32px"
                   className="rounded-lg object-cover"
                 />
               </div>
@@ -92,7 +90,6 @@ export default async function Footer() {
             <ul className="flex flex-col gap-3">
               <li><Link href="/how-it-works" className="text-sm hover:text-brand-400 transition-colors">How It Works</Link></li>
               <li><Link href="/safety" className="text-sm hover:text-brand-400 transition-colors">Safety Tips</Link></li>
-              <li><Link href="/listing-rules" className="text-sm hover:text-brand-400 transition-colors">Listing Rules</Link></li>
               <li><Link href="/faq" className="text-sm hover:text-brand-400 transition-colors">FAQ</Link></li>
               <li><Link href="/contact" className="text-sm hover:text-brand-400 transition-colors">Contact</Link></li>
             </ul>

@@ -1,9 +1,9 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { notFound } from "next/navigation";
 import BrowseLayout from "@/components/browse/BrowseLayout";
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
-import { Category } from "@/services/categoryService";
+import { Category, getCachedCategories } from "@/services/categoryService";
 import { API_URL } from "@/services/api";
 
 export default async function SubCategoryPage({
@@ -17,18 +17,15 @@ export default async function SubCategoryPage({
 
   try {
     // Fetch active categories from the public endpoint
-    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
-    if (res.ok) {
-      categories = await res.json();
+    categories = await getCachedCategories();
       
-      // Find the parent category
+    // Find the parent category
       const parentCategory = categories.find((c) => c.slug.toLowerCase() === category.toLowerCase());
       
       // Validate both parent and subcategory exist in the active list
       isValid = !!(parentCategory && parentCategory.children?.some(
         (sub) => sub.slug.toLowerCase() === subcategory.toLowerCase()
       ));
-    }
   } catch (error) {
     console.error("Failed to fetch subcategories for validation", error);
   }
@@ -41,7 +38,9 @@ export default async function SubCategoryPage({
   return (
     <>
       <Navbar />
-      <BrowseLayout category={category} subcategory={subcategory} categories={categories} />
+      <Suspense fallback={<div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div></div>}>
+        <BrowseLayout category={category} subcategory={subcategory} categories={categories} />
+      </Suspense>
       <Footer />
     </>
   );

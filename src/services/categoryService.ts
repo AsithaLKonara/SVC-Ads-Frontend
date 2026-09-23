@@ -1,4 +1,5 @@
 import { fetchWithAuth, API_URL } from './api';
+import { cache } from 'react';
 
 export interface Category {
   id: string;
@@ -19,7 +20,7 @@ export interface Category {
 }
 
 export const categoryService = {
-  // Public route
+  // Public route - uncached (legacy/client usage)
   async getCategories(): Promise<Category[]> {
     const res = await fetch(`${API_URL}/categories`);
     const data = await res.json();
@@ -73,3 +74,27 @@ export const categoryService = {
     if (!res.ok) throw new Error(data.message || 'Failed to delete category');
   }
 };
+
+// Memory cache to prevent Next.js prefetch spam in dev mode
+let categoryCache: { data: Category[]; timestamp: number } | null = null;
+const CACHE_TTL = 60 * 1000; // 60 seconds
+
+// Cached version for Server Components to prevent fetch spam
+export const getCachedCategories = cache(async (): Promise<Category[]> => {
+  const now = Date.now();
+  if (categoryCache && now - categoryCache.timestamp < CACHE_TTL) {
+    return categoryCache.data;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
+    if (!res.ok) return categoryCache ? categoryCache.data : [];
+    
+    const data = await res.json();
+    categoryCache = { data, timestamp: now };
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch cached categories:", error);
+    return categoryCache ? categoryCache.data : [];
+  }
+});

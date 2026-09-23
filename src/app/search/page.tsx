@@ -1,9 +1,9 @@
-import React from "react";
+import React, { Suspense } from "react";
 import BrowseLayout from "@/components/browse/BrowseLayout";
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 import { API_URL } from "@/services/api";
-import { Category } from "@/services/categoryService";
+import { Category, getCachedCategories } from "@/services/categoryService";
 import { adService, PaginatedAds } from "@/services/adService";
 import { Metadata } from "next";
 import { generateSeoMetadata } from "@/lib/seo/metadata";
@@ -27,10 +27,7 @@ export default async function SearchPage({
   let adsData: PaginatedAds = { data: [], total: 0, page: 1, totalPages: 1, limit: 12 };
   
   try {
-    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
-    if (res.ok) {
-      categories = await res.json();
-    }
+    categories = await getCachedCategories();
   } catch (error) {
     console.error("Failed to fetch categories:", error);
   }
@@ -59,12 +56,14 @@ export default async function SearchPage({
   return (
     <>
       <Navbar />
-      <BrowseLayout 
-        searchQuery={q} 
-        categories={categories} 
-        initialData={adsData}
-        locations={locations}
-      />
+      <Suspense fallback={<div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div></div>}>
+        <BrowseLayout 
+          searchQuery={q} 
+          categories={categories} 
+          initialData={adsData}
+          locations={locations}
+        />
+      </Suspense>
       <Footer />
     </>
   );

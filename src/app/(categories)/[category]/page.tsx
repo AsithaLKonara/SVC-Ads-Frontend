@@ -1,9 +1,9 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import BrowseLayout from "@/components/browse/BrowseLayout";
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
-import { Category } from "@/services/categoryService";
+import { Category, getCachedCategories } from "@/services/categoryService";
 import { adService, Ad, PaginatedAds } from "@/services/adService";
 import { API_URL } from "@/services/api";
 import { generateSeoMetadata } from "@/lib/seo/metadata";
@@ -37,12 +37,9 @@ export default async function CategoryPage({
 
   try {
     // Fetch active categories from the public endpoint
-    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
-    if (res.ok) {
-      categories = await res.json();
-      // Validate that the route matches a valid top-level category slug
+    categories = await getCachedCategories();
+    // Validate that the route matches a valid top-level category slug
       isValid = categories.some((c) => c.slug.toLowerCase() === category.toLowerCase());
-    }
   } catch (error) {
     console.error("Failed to fetch categories for validation", error);
   }
@@ -80,12 +77,14 @@ export default async function CategoryPage({
   return (
     <>
       <Navbar />
-      <BrowseLayout 
-        category={category} 
-        categories={categories} 
-        initialData={adsData}
-        locations={locations}
-      />
+      <Suspense fallback={<div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div></div>}>
+        <BrowseLayout 
+          category={category} 
+          categories={categories} 
+          initialData={adsData}
+          locations={locations}
+        />
+      </Suspense>
       <Footer />
     </>
   );
