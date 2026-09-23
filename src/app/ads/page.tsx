@@ -5,6 +5,14 @@ import Footer from "@/components/home/Footer";
 import { API_URL } from "@/services/api";
 import { Category } from "@/services/categoryService";
 import { adService, Ad, PaginatedAds } from "@/services/adService";
+import { Metadata } from "next";
+import { generateSeoMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = generateSeoMetadata({
+  title: "Browse All Properties",
+  description: "Browse all commercially valuable lands and properties available for sale in Sri Lanka.",
+  url: "/ads",
+});
 
 export default async function AdsPage({
   searchParams,

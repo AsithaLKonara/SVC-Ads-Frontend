@@ -5,6 +5,15 @@ import Footer from "@/components/home/Footer";
 import { API_URL } from "@/services/api";
 import { Category } from "@/services/categoryService";
 import { adService, PaginatedAds } from "@/services/adService";
+import { Metadata } from "next";
+import { generateSeoMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = generateSeoMetadata({
+  title: "Search Properties",
+  description: "Search for commercially valuable lands and properties in Sri Lanka based on your specific requirements.",
+  url: "/search",
+  noIndex: true, // Do not index raw search pages
+});
 
 export default async function SearchPage({
   searchParams,

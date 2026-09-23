@@ -12,10 +12,9 @@ const outfit = Outfit({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "LAKLAND REALITY",
-  description: "Commercially Valuable Lands in Sri Lanka. Invest Today. Build Tomorrow.",
-};
+import { generateSeoMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = generateSeoMetadata();
 
 import TrafficTrackerClient from "@/components/analytics/TrafficTrackerClient";
 

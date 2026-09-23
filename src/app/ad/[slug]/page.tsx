@@ -10,6 +10,28 @@ import StickyMobileContact from "@/components/ad/StickyMobileContact";
 import RelatedAds from "@/components/ad/RelatedAds";
 import { adService, Ad } from "@/services/adService";
 import { getRelativeTime } from "@/utils/format";
+import { generateSeoMetadata } from "@/lib/seo/metadata";
+import { generateRealEstateListingSchema } from "@/lib/seo/structured-data";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const rawAd = await adService.getAd(slug);
+    return generateSeoMetadata({
+      title: rawAd.title,
+      description: rawAd.description.substring(0, 160),
+      url: `/ad/${rawAd.slug}`,
+      image: rawAd.images?.[0],
+      type: "article",
+      publishedTime: rawAd.createdAt,
+      modifiedTime: rawAd.updatedAt,
+    });
+  } catch (error) {
+    return generateSeoMetadata({ title: "Ad Not Found" });
+  }
+}
 
 export default async function AdPage({
   params,
@@ -58,6 +80,17 @@ export default async function AdPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <JsonLd data={generateRealEstateListingSchema({
+        title: rawAd.title,
+        description: rawAd.description,
+        price: rawAd.price,
+        url: `/ad/${rawAd.slug}`,
+        images: ad.images,
+        district: rawAd.district,
+        city: rawAd.city,
+        publishedAt: rawAd.createdAt,
+        updatedAt: rawAd.updatedAt,
+      })} />
       <Navbar />
 
       <main className="flex-1 pb-24 md:pb-12">

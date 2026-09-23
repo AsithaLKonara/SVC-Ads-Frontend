@@ -9,6 +9,8 @@ import TrustSafety from "@/components/home/TrustSafety";
 import Footer from "@/components/home/Footer";
 import { API_URL } from "@/services/api";
 import { Category } from "@/services/categoryService";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data";
 
 export default async function Home() {
   let categories: Category[] = [];
@@ -24,6 +26,8 @@ export default async function Home() {
 
   return (
     <>
+      <JsonLd data={generateOrganizationSchema()} />
+      <JsonLd data={generateWebSiteSchema()} />
       <Navbar />
       <main className="flex-1">
         <Hero categories={categories} />

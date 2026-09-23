@@ -6,6 +6,21 @@ import Footer from "@/components/home/Footer";
 import { Category } from "@/services/categoryService";
 import { adService, Ad, PaginatedAds } from "@/services/adService";
 import { API_URL } from "@/services/api";
+import { generateSeoMetadata } from "@/lib/seo/metadata";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
+  const { category } = await params;
+  
+  // Format category slug nicely for title (e.g., 'commercial-lands' -> 'Commercial Lands')
+  const formattedName = category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  
+  return generateSeoMetadata({
+    title: `${formattedName} Properties`,
+    description: `Browse the best ${formattedName} in Sri Lanka. Find your ideal property today on LAKLAND REALITY.`,
+    url: `/${category}`,
+  });
+}
 
 export default async function CategoryPage({
   params,
