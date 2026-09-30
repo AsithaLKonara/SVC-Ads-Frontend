@@ -62,7 +62,7 @@ export default function AuditLogsPage() {
         ...(search && { search }),
       });
 
-      const res = await fetch(`http://localhost:5000/api/audit-logs?${params}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/audit-logs?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
