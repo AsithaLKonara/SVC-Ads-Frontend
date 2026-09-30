@@ -27,8 +27,8 @@ export default function ReportsPage() {
     setLoading(true);
     try {
       const [analyticsRes, activeAdsRes] = await Promise.all([
-        fetch(`http://localhost:5000/api/analytics/stats?timeframe=${tf}&limit=50`),
-        fetch('http://localhost:5000/api/ads?status=ACTIVE&limit=1') // Get active ads count
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/analytics/stats?timeframe=${tf}&limit=50`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/ads?status=ACTIVE&limit=1`) // Get active ads count
       ]);
 
       const analyticsData = await analyticsRes.json();

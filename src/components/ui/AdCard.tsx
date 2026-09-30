@@ -43,10 +43,14 @@ export default function AdCard({
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
           {isFeatured && (
-            <div className="absolute left-3 top-3 rounded-full bg-brand-500 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-white shadow-sm">
+            <div className="absolute left-3 top-3 rounded-md bg-gold-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-950 shadow-sm">
               Featured
             </div>
           )}
+          
+          <button aria-label="Save property" className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition-colors hover:bg-white/40">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          </button>
         </div>
 
         {/* Content Container */}
@@ -66,7 +70,7 @@ export default function AdCard({
           
           <div className={`mt-auto ${isList ? "flex items-end justify-between" : ""}`}>
             <div>
-              <div className="mb-1 text-lg font-bold text-brand-600">
+              <div className="mb-2 text-xl font-bold text-brand-700">
                 Rs {price}
               </div>
               

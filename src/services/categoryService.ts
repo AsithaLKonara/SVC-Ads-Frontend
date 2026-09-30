@@ -7,6 +7,7 @@ export interface Category {
   slug: string;
   description: string | null;
   icon: string | null;
+  image: string | null;
   parentId: string | null;
   isActive: boolean;
   sortOrder: number;

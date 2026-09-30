@@ -25,60 +25,94 @@ export default async function PopularCategories() {
     console.error("Failed to fetch popular categories", error);
   }
 
-  // Use up to 6 categories for the grid
-  const displayCategories = categories.slice(0, 6);
+  // Show up to 12 categories, allowing the grid to auto-adjust
+  const displayCategories = categories.slice(0, 12);
+
+  const getCategoryDescription = (slug: string) => {
+    if (slug.includes('house')) return "Homes for sale and rent";
+    if (slug.includes('land')) return "Residential and commercial land";
+    if (slug.includes('apartment')) return "Flats and apartments";
+    if (slug.includes('commercial')) return "Shops, offices and buildings";
+    return "Explore listings in this category";
+  };
+
+  const getGridClasses = (index: number, total: number) => {
+    // Un-uniform bento pattern of column spans for a 4-column grid
+    const pattern = [2, 1, 1, 1, 2, 1, 1, 1, 2, 2, 2, 4];
+    let span = pattern[index % pattern.length];
+    
+    // If this is the last item, stretch it to fill the remaining space in the row
+    if (index === total - 1) {
+      let sum = 0;
+      for (let i = 0; i < total - 1; i++) {
+        sum += pattern[i % pattern.length];
+      }
+      const remainder = sum % 4;
+      span = remainder === 0 ? 4 : 4 - remainder;
+    }
+    
+    // Convert numeric span to tailwind class
+    const spanClass = {
+      1: "md:col-span-1",
+      2: "md:col-span-2",
+      3: "md:col-span-3",
+      4: "md:col-span-4",
+    }[span] || "md:col-span-1";
+
+    // For the very first item, make it slightly taller for a featured look if it spans 2
+    const heightClass = (index === 0 && span === 2) ? "h-[350px] md:h-[400px]" : "h-[250px] md:h-[300px]";
+
+    return `${spanClass} ${heightClass}`;
+  };
 
   return (
-    <section className="relative py-20 overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/pexels-naveen-annam-734127-2002431.jpg"
-          alt="Popular Categories Background"
-          fill
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-green-950/50 backdrop-blur-[2px]" />
-      </div>
-      <div className="container relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+    <section className="relative py-20 bg-background overflow-hidden">
+      <div className="page-container relative z-10">
+        <div className="mb-10 flex flex-col items-center justify-center gap-4 text-center">
           <div>
-            <h2 className="mb-2 font-heading text-3xl font-bold text-white sm:text-4xl">
-              Popular Categories
+            <h2 className="mb-2 font-heading text-3xl font-bold text-foreground sm:text-[36px]">
+              Explore Property Types
             </h2>
-            <p className="max-w-2xl text-lg text-white/80">
-              Browse through our most active markets and find exactly what you're looking for.
-            </p>
           </div>
           <Link
             href="/categories"
-            className="group inline-flex items-center gap-1 font-medium text-brand-400 hover:text-brand-300 transition-colors"
+            className="group inline-flex items-center gap-1 font-medium text-gold-500 hover:text-gold-400 transition-colors"
           >
             View all categories
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {displayCategories.map((cat) => (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {displayCategories.map((cat, idx) => (
             <Link
               key={cat.id}
               href={`/${cat.slug}`}
-              className="group flex min-h-[140px] flex-col items-center justify-center rounded-2xl bg-card p-6 shadow-sm border border-border/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-premium hover:border-brand-200"
+              className={`group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-brand-900 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-hover ${getGridClasses(idx, displayCategories.length)}`}
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-500 group-hover:text-white">
-                <DynamicIcon name={cat.icon} size={24} />
+              <img 
+                src={cat.image || "/images/pexels-the-ghazi-2152398165-33747708.jpg"}
+                alt={cat.name}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+              
+              <div className="relative z-10 p-6 md:p-8">
+                <div className="mb-2 h-10 w-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-gold-400">
+                  <DynamicIcon name={cat.icon} size={20} />
+                </div>
+                <h3 className={`font-heading font-bold text-ivory-50 group-hover:text-gold-300 transition-colors ${idx === 0 ? 'text-3xl mb-2' : 'text-xl mb-1'}`}>
+                  {cat.name}
+                </h3>
+                <p className={`text-ivory-50/80 ${idx === 0 ? 'text-base' : 'text-sm'}`}>
+                  {getCategoryDescription(cat.slug)}
+                </p>
               </div>
-              <h3 className="mb-1 text-center font-heading text-sm font-semibold text-foreground group-hover:text-brand-600 transition-colors">
-                {cat.name}
-              </h3>
-              <p className="text-center text-xs text-foreground/50">
-                {cat._count?.children || 0} subcategories
-              </p>
             </Link>
           ))}
           
           {displayCategories.length === 0 && (
-             <div className="col-span-full py-8 text-center text-white/70">
+             <div className="col-span-full py-8 text-center text-foreground/70">
                 No categories found. Please add categories from the admin dashboard.
              </div>
           )}

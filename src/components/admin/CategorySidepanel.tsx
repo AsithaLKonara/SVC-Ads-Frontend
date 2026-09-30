@@ -28,6 +28,7 @@ const categorySchema = z.object({
     __isNew__: z.boolean().optional() 
   }).nullable(),
   icon: z.string().optional(),
+  image: z.string().optional(),
   slug: z.string().min(2, "Slug must be at least 2 characters")
     .regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
   description: z.string().optional(),
@@ -62,6 +63,7 @@ export default function CategorySidepanel({
   const [activeTab, setActiveTab] = useState<"details" | "attributes">("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const title = mode === "add" ? "Add Taxonomy Node" : mode === "edit" ? "Edit Node" : "Category Details";
 
@@ -154,7 +156,9 @@ export default function CategorySidepanel({
           icon: category.icon || "",
           isActive: category.isActive,
           attributes: Array.isArray(parsedAttrs) ? parsedAttrs : [],
+          image: category.image || "",
         });
+        setImagePreview(category.image || null);
       } else if (mode === "add") {
         reset({
           parentCategory: null,
@@ -162,14 +166,30 @@ export default function CategorySidepanel({
           slug: "",
           description: "",
           icon: "",
+          image: "",
           isActive: true,
           attributes: [],
         });
+        setImagePreview(null);
       }
       setApiError(null);
       setActiveTab("details");
     }
   }, [isOpen, mode, category, reset, topLevelCategories]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        setImagePreview(reader.result);
+        setValue("image", reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const onSubmit = async (data: CategoryFormData) => {
     if (mode === "view") return;
@@ -199,6 +219,7 @@ export default function CategorySidepanel({
               slug: data.slug,
               description: data.description || null,
               icon: data.icon || null,
+              image: data.image || null,
               parentId: parentId,
               isActive: data.isActive ?? true,
               attributes: data.attributes?.length ? data.attributes : null,
@@ -210,6 +231,7 @@ export default function CategorySidepanel({
               slug: data.slug,
               description: data.description || null,
               icon: data.icon || null,
+              image: data.image || null,
               isActive: data.isActive ?? true,
               attributes: data.attributes?.length ? data.attributes : null,
             });
@@ -223,6 +245,7 @@ export default function CategorySidepanel({
                 slug: data.slug,
                 description: data.description || null,
                 icon: data.icon || null,
+                image: data.image || null,
                 isActive: data.isActive ?? true,
                 attributes: data.attributes?.length ? data.attributes : null,
              });
@@ -235,6 +258,7 @@ export default function CategorySidepanel({
           slug: data.slug,
           description: data.description || null,
           icon: data.icon || null,
+          image: data.image || null,
           isActive: data.isActive ?? true,
           attributes: data.attributes?.length ? data.attributes : null,
         });
@@ -418,6 +442,43 @@ export default function CategorySidepanel({
                   <option value="Package">Package / General</option>
                   <option value="Folder">Folder / Misc</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Category Image</label>
+                <div className="flex items-start gap-4">
+                  {imagePreview ? (
+                    <div className="relative h-24 w-24 shrink-0 rounded-md overflow-hidden bg-slate-100 border border-slate-200 group">
+                      <img src={imagePreview} alt="Category preview" className="w-full h-full object-cover" />
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setValue("image", "");
+                        }}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex h-24 w-24 shrink-0 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-slate-300 hover:bg-slate-50 hover:border-brand-400 hover:text-brand-500 transition-colors text-slate-500">
+                      <Plus size={20} className="mb-1" />
+                      <span className="text-[10px] font-medium">Upload</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleImageUpload}
+                        disabled={mode === "view" || isSubmitting}
+                      />
+                    </label>
+                  )}
+                  <div className="text-xs text-slate-500 mt-1">
+                    <p>Upload a high-quality image representing this category.</p>
+                    <p className="mt-1">Suggested ratio: 16:9.</p>
+                  </div>
+                </div>
               </div>
 
               <div>
