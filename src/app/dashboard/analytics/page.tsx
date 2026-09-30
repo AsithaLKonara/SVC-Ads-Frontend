@@ -29,7 +29,7 @@ export default function AnalyticsPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/analytics/stats?timeframe=${timeframe}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analytics/stats?timeframe=${timeframe}`);
         const result = await res.json();
         setData(result);
       } catch (error) {
