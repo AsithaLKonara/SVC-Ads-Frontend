@@ -7,6 +7,7 @@ export default function ContactForm() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: "",
   });
@@ -34,7 +35,7 @@ export default function ContactForm() {
         throw new Error("Failed to send message. Please try again later.");
       }
       setIsSuccess(true);
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to send message. Please try again later.");
     } finally {
@@ -74,17 +75,31 @@ export default function ContactForm() {
           </div>
         </div>
 
-        <div>
-          <label htmlFor="subject" className="block text-sm font-medium text-slate-700 mb-1">Subject (Optional)</label>
-          <input
-            type="text"
-            id="subject"
-            name="subject"
-            value={formData.subject}
-            onChange={handleChange}
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-            placeholder="How can we help?"
-          />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1">Phone Number (Optional)</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              placeholder="+1 (555) 000-0000"
+            />
+          </div>
+          <div>
+            <label htmlFor="subject" className="block text-sm font-medium text-slate-700 mb-1">Subject (Optional)</label>
+            <input
+              type="text"
+              id="subject"
+              name="subject"
+              value={formData.subject}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              placeholder="How can we help?"
+            />
+          </div>
         </div>
 
         <div>

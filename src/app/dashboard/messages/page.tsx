@@ -8,6 +8,13 @@ import MessageSidepanel from "@/components/admin/MessageSidepanel";
 import { io } from "socket.io-client";
 import { fetchWithAuth } from "@/services/api";
 
+type Followup = {
+  id: string;
+  status: string;
+  note: string | null;
+  createdAt: string;
+};
+
 type Message = {
   id: string;
   name: string;
@@ -15,6 +22,9 @@ type Message = {
   subject: string | null;
   message: string;
   isRead: boolean;
+  phone?: string | null;
+  status: 'PENDING' | 'IN_PROGRESS' | 'RESOLVED';
+  followups?: Followup[];
   createdAt: string;
 };
 
@@ -73,6 +83,22 @@ export default function MessagesDashboard() {
     setSelectedMessage(null);
   };
 
+  const handleStatusChange = async (messageId: string, status: string, note?: string) => {
+    try {
+      const res = await fetchWithAuth(`/messages/${messageId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status, note })
+      });
+      if (res.ok) {
+        const updatedMessage = await res.json();
+        setMessages(prev => prev.map(m => m.id === messageId ? updatedMessage : m));
+        setSelectedMessage(updatedMessage);
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -95,6 +121,7 @@ export default function MessagesDashboard() {
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
+                <th className="px-6 py-4 font-medium">Read</th>
                 <th className="px-6 py-4 font-medium">Status</th>
                 <th className="px-6 py-4 font-medium">Sender</th>
                 <th className="px-6 py-4 font-medium">Subject</th>
@@ -122,6 +149,15 @@ export default function MessagesDashboard() {
                       ) : (
                         <Mail className="h-5 w-5 text-brand-500" />
                       )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        message.status === 'RESOLVED' ? 'bg-green-100 text-green-800' :
+                        message.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-slate-100 text-slate-800'
+                      }`}>
+                        {message.status?.replace('_', ' ') || 'PENDING'}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
@@ -152,6 +188,7 @@ export default function MessagesDashboard() {
         message={selectedMessage} 
         isOpen={!!selectedMessage} 
         onClose={closeSidepanel} 
+        onStatusChange={handleStatusChange}
       />
     </div>
   );

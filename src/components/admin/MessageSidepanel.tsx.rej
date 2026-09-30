@@ -1,0 +1,32 @@
+***************
+*** 3,13 ****
+- import React, { useEffect, useRef } from "react";
+  import { X, Calendar, User, Mail, FileText } from "lucide-react";
+  import { format } from "date-fns";
+  
+  type Message = {
+    id: string;
+    name: string;
+    email: string;
+    subject: string | null;
+    message: string;
+    isRead: boolean;
+--- 3,20 ----
++ import React, { useEffect, useRef, useState } from "react";
+  import { X, Calendar, User, Mail, FileText } from "lucide-react";
+  import { format } from "date-fns";
+  
++ type Followup = {
++   id: string;
++   status: string;
++   note: string | null;
++   createdAt: string;
++ };
++ 
+  type Message = {
+    id: string;
+    name: string;
+    email: string;
+    subject: string | null;
+    message: string;
+    isRead: boolean;

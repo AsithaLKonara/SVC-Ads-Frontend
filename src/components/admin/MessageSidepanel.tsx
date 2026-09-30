@@ -1,8 +1,15 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { X, Calendar, User, Mail, FileText } from "lucide-react";
 import { format } from "date-fns";
+
+type Followup = {
+  id: string;
+  status: string;
+  note: string | null;
+  createdAt: string;
+};
 
 type Message = {
   id: string;
@@ -11,6 +18,9 @@ type Message = {
   subject: string | null;
   message: string;
   isRead: boolean;
+  phone?: string | null;
+  status: 'PENDING' | 'IN_PROGRESS' | 'RESOLVED';
+  followups?: Followup[];
   createdAt: string;
 };
 
@@ -18,10 +28,22 @@ type Props = {
   message: Message | null;
   isOpen: boolean;
   onClose: () => void;
+  onStatusChange?: (id: string, status: string, note: string) => Promise<void>;
 };
 
-export default function MessageSidepanel({ message, isOpen, onClose }: Props) {
+export default function MessageSidepanel({ message, isOpen, onClose, onStatusChange }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [newStatus, setNewStatus] = useState("PENDING");
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (message) {
+      setNewStatus(message.status || "PENDING");
+      setNote("");
+    }
+  }, [message]);
 
   // Close when clicking outside
   useEffect(() => {
@@ -56,7 +78,9 @@ export default function MessageSidepanel({ message, isOpen, onClose }: Props) {
         className="fixed inset-y-0 right-0 z-50 w-full max-w-md transform bg-white shadow-2xl transition-transform duration-300 ease-in-out sm:w-[480px] overflow-y-auto"
       >
         <div className="flex h-16 items-center justify-between border-b border-slate-200 px-6 bg-slate-50">
-          <h2 className="text-lg font-bold text-slate-900">Message Details</h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-bold text-slate-900">Message Details</h2>
+          </div>
           <button 
             onClick={onClose}
             className="rounded-full p-2 text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-colors"
@@ -82,6 +106,22 @@ export default function MessageSidepanel({ message, isOpen, onClose }: Props) {
                 <a href={`mailto:${message.email}`} className="text-brand-600 hover:underline">
                   {message.email}
                 </a>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="h-5 w-5 text-slate-400 mt-0.5 shrink-0 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase text-slate-500 mb-1">Phone</p>
+                {message.phone ? (
+                  <a href={`tel:${message.phone}`} className="text-brand-600 font-medium hover:underline">
+                    {message.phone}
+                  </a>
+                ) : (
+                  <span className="italic text-slate-400">Not provided</span>
+                )}
               </div>
             </div>
 
@@ -116,6 +156,102 @@ export default function MessageSidepanel({ message, isOpen, onClose }: Props) {
             </div>
           </div>
           
+          <hr className="border-slate-200" />
+          
+          <div className="space-y-4">
+            <h3 className="text-xs font-semibold uppercase text-slate-500 mb-2">Follow-ups Timeline</h3>
+            {message.followups && message.followups.length > 0 ? (
+              <div className="space-y-3">
+                {message.followups.map(f => (
+                  <div key={f.id} className="bg-white p-4 rounded-xl border border-slate-200 text-sm shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                        f.status === 'RESOLVED' ? 'bg-green-100 text-green-800' :
+                        f.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-slate-100 text-slate-800'
+                      }`}>
+                        {f.status.replace('_', ' ')}
+                      </span>
+                      <span className="text-slate-400 text-xs">{format(new Date(f.createdAt), "MMM d, yyyy h:mm a")}</span>
+                    </div>
+                    {f.note && <p className="text-slate-700 whitespace-pre-wrap">{f.note}</p>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 italic">No follow-ups recorded yet.</p>
+            )}
+          </div>
+
+          {onStatusChange && (
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <h4 className="text-sm font-semibold text-slate-900 mb-3">Add Follow-up</h4>
+              <div className="relative mb-3">
+                <button
+                  type="button"
+                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                  className="w-full flex items-center justify-between rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className={`inline-block w-2 h-2 rounded-full ${
+                      newStatus === 'RESOLVED' ? 'bg-green-500' :
+                      newStatus === 'IN_PROGRESS' ? 'bg-yellow-500' :
+                      'bg-slate-400'
+                    }`} />
+                    <span className="capitalize">{newStatus.replace('_', ' ').toLowerCase()}</span>
+                  </span>
+                  <svg className={`h-4 w-4 text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {isStatusDropdownOpen && (
+                  <div className="absolute z-10 mt-1 w-full rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden py-1">
+                    {['PENDING', 'IN_PROGRESS', 'RESOLVED'].map((statusOption) => (
+                      <button
+                        key={statusOption}
+                        type="button"
+                        onClick={() => {
+                          setNewStatus(statusOption);
+                          setIsStatusDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors ${
+                          newStatus === statusOption ? 'bg-brand-50 text-brand-600 font-medium' : 'text-slate-700'
+                        }`}
+                      >
+                        <span className={`inline-block w-2 h-2 rounded-full ${
+                          statusOption === 'RESOLVED' ? 'bg-green-500' :
+                          statusOption === 'IN_PROGRESS' ? 'bg-yellow-500' :
+                          'bg-slate-400'
+                        }`} />
+                        <span className="capitalize">{statusOption.replace('_', ' ').toLowerCase()}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <textarea
+                value={note}
+                onChange={e => setNote(e.target.value)}
+                placeholder="Add a note (optional)"
+                className="w-full mb-3 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none resize-none"
+                rows={3}
+              />
+              <button 
+                onClick={async () => {
+                  setIsSubmitting(true);
+                  await onStatusChange(message.id, newStatus, note);
+                  setNote("");
+                  setIsSubmitting(false);
+                }}
+                disabled={isSubmitting}
+                className="w-full flex justify-center items-center rounded-xl bg-brand-500 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-brand-600 disabled:opacity-70 transition-all"
+              >
+                {isSubmitting ? "Saving..." : "Add Follow-up"}
+              </button>
+            </div>
+          )}
+
           <div className="pt-6">
             <a 
               href={`mailto:${message.email}?subject=Re: ${message.subject || 'Your inquiry'}`}
