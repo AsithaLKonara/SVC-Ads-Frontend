@@ -7,7 +7,7 @@ import { adService, Ad } from "@/services/adService";
 export default async function LatestAds() {
   let ads: Ad[] = [];
   try {
-    const res = await adService.getAds({ limit: '8', status: 'ACTIVE' });
+    const res = await adService.getAds({ limit: '6', status: 'ACTIVE' });
     // Defensive check to handle both old API (returns array) and new API (returns PaginatedAds) during build transitions
     ads = Array.isArray(res) ? res : (res.data || []);
   } catch (error) {
@@ -32,29 +32,20 @@ export default async function LatestAds() {
   });
 
   return (
-    <section className="relative py-20 overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/pexels-nikitapishchugin-29282319.jpg"
-          alt="Latest Ads Background"
-          fill
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-green-950/50 backdrop-blur-[2px]" />
-      </div>
-      <div className="container relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+    <section className="relative py-24 bg-background overflow-hidden">
+      <div className="page-container relative z-10">
+        <div className="mb-12 flex flex-col items-center justify-center gap-4 text-center">
           <div>
-            <h2 className="mb-2 font-heading text-3xl font-bold text-white sm:text-4xl">
-              Fresh Recommendations
+            <h2 className="mb-2 font-heading text-3xl font-bold text-foreground sm:text-[36px]">
+              Recently Added Properties
             </h2>
-            <p className="max-w-2xl text-lg text-white/80">
+            <p className="max-w-2xl text-lg text-foreground/80">
               The latest listings added to our marketplace today.
             </p>
           </div>
           <Link
             href="/ads"
-            className="group inline-flex items-center gap-1 font-medium text-brand-400 hover:text-brand-300 transition-colors"
+            className="group inline-flex items-center gap-1 font-medium text-gold-500 hover:text-gold-400 transition-colors"
           >
             View all ads
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="m9 18 6-6-6-6"/></svg>
@@ -62,13 +53,13 @@ export default async function LatestAds() {
         </div>
 
         {mappedAds.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {mappedAds.map((ad) => (
               <AdCard key={ad.id} {...ad} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 text-white/70">
+          <div className="text-center py-12 text-foreground/70">
             No recent ads available at the moment.
           </div>
         )}
@@ -77,7 +68,7 @@ export default async function LatestAds() {
           <div className="mt-12 flex justify-center">
             <Link
               href="/ads"
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-brand-500 px-8 font-medium text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-lg"
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-gold-500 px-8 font-medium text-brand-950 shadow-md transition-all hover:-translate-y-0.5 hover:bg-gold-400 hover:shadow-lg"
             >
               Load More Listings
             </Link>

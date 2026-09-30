@@ -20,9 +20,9 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         const [adsRes, activeAdsRes, analyticsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/ads?limit=1'),
-          fetch('http://localhost:5000/api/ads?status=ACTIVE&limit=1'),
-          fetch('http://localhost:5000/api/analytics/stats?timeframe=all')
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/ads?limit=1`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/ads?status=ACTIVE&limit=1`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/analytics/stats?timeframe=all`)
         ]);
 
         const adsData = await adsRes.json();

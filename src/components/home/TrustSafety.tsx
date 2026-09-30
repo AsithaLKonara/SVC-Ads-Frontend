@@ -24,8 +24,8 @@ export default function TrustSafety() {
   ];
 
   return (
-    <section className="py-20 bg-background border-t border-border/50">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="py-24 bg-background border-t border-border/50">
+      <div className="page-container">
         <div className="mb-10 text-center">
           <h2 className="mb-2 font-heading text-2xl font-bold text-foreground">
             Trust & Safety
@@ -40,16 +40,16 @@ export default function TrustSafety() {
             <Link 
               key={policy.title} 
               href={policy.link}
-              className="group relative flex flex-col items-center overflow-hidden rounded-3xl bg-gray-900/80 border border-gray-800 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,0,0,0.2)] hover:border-gray-700"
+              className="group relative flex flex-col items-center overflow-hidden rounded-3xl bg-brand-900 border border-brand-800 p-8 text-center shadow-premium transition-all duration-300 hover:-translate-y-2 hover:shadow-premium-hover hover:border-brand-700"
             >
-              <div className="absolute top-0 left-0 h-1.5 w-full bg-gradient-to-r from-brand-400 to-brand-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="absolute top-0 left-0 h-1.5 w-full bg-gradient-to-r from-gold-400 to-gold-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/5 text-white shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-white/10 group-hover:shadow-md">
                 {policy.icon}
               </div>
-              <h3 className="mb-3 font-heading text-xl font-bold text-white transition-colors group-hover:text-brand-400">
+              <h3 className="mb-3 font-heading text-xl font-bold text-ivory-50 transition-colors group-hover:text-gold-400">
                 {policy.title}
               </h3>
-              <p className="text-base leading-relaxed text-gray-400">
+              <p className="text-base leading-relaxed text-brand-50/70">
                 {policy.description}
               </p>
             </Link>
