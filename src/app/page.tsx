@@ -6,6 +6,7 @@ import LatestAds from "@/components/home/LatestAds";
 import LocationBrowser from "@/components/home/LocationBrowser";
 import HowItWorks from "@/components/home/HowItWorks";
 import TrustSafety from "@/components/home/TrustSafety";
+import SellerBanner from "@/components/home/SellerBanner";
 import Footer from "@/components/home/Footer";
 import { API_URL } from "@/services/api";
 import { Category, getCachedCategories } from "@/services/categoryService";
@@ -34,6 +35,7 @@ export default async function Home() {
         <LocationBrowser />
         <HowItWorks />
         <TrustSafety />
+        <SellerBanner />
       </main>
       <Footer />
     </>

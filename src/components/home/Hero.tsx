@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Category } from "@/services/categoryService";
+import MarketplaceHighlights from "./MarketplaceHighlights";
 
 import { getDistricts } from "sri-lanka-postal-locations";
 
@@ -17,9 +18,10 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
   const [location, setLocation] = useState("");
 
   const heroImages = [
-    "/images/pexels-luizavenanci-29334668.jpg",
-    "/images/pexels-jakub-pabis-147246622-19963719.jpg",
-    "/images/pexels-the-ghazi-2152398165-33747708.jpg",
+    "/images/hero/house-wallpaper-1920x1080-coastal-marine-26026.jpg",
+    "/images/hero/modern-house-wallpaper-1920x1080-coastal-living-tranquil-waters-25569.jpg",
+    "/images/hero/modern-house-wallpaper-1920x1080-infinity-pool-evening-light-25547.jpg",
+    "/images/hero/modern-house-wallpaper-1920x1080-open-concept-clean-lines-25699.jpg"
   ];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -43,7 +45,7 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
   };
 
   return (
-    <section className="relative flex min-h-[600px] w-full flex-col items-center justify-center overflow-hidden py-24 md:min-h-[700px]">
+    <section className="relative flex min-h-[600px] w-full flex-col items-center justify-center overflow-hidden -mt-20 pt-[176px] pb-40 md:pb-48 md:min-h-[700px]">
       {/* Background Image Carousel */}
       <div className="absolute inset-0 z-0 bg-gray-900">
         {heroImages.map((src, index) => (
@@ -53,25 +55,25 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
             alt={`Sri Lankan marketplace ${index + 1}`}
             fill
             priority={index === 0}
-            className={`object-cover object-center transition-opacity duration-1000 ${
-              index === currentImageIndex ? "opacity-100" : "opacity-0"
+            className={`object-cover object-center transition-all ease-out duration-[7000ms] ${
+              index === currentImageIndex ? "opacity-100 scale-110" : "opacity-0 scale-100"
             }`}
           />
         ))}
-        {/* Gradient Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/60" />
       </div>
 
       <div className="container relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 text-center sm:px-6 lg:px-8">
-        <span className="mb-4 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm font-medium text-white backdrop-blur-md">
-          Commercially Valuable Lands in Sri Lanka
+        <span className="mb-4 inline-flex tracking-widest uppercase text-gold-500 font-semibold text-xs sm:text-sm">
+          Find your place in Sri Lanka
         </span>
         <h1 className="mb-6 font-heading text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-          Invest Today. <br className="hidden sm:inline" />
-          <span className="text-brand-400">Build Tomorrow.</span>
+          Your Property. <br className="hidden sm:inline" />
+          <span className="text-gold-400">Your Future.</span>
         </h1>
-        <p className="mb-10 max-w-2xl text-lg text-white/80 sm:text-xl">
-          Your Land. Your Future. Strategic Locations. Clear & Secure Land Ownership.
+        <p className="mb-10 max-w-2xl text-lg text-white drop-shadow-md sm:text-xl font-medium tracking-wide">
+          Discover land, homes and investment opportunities across Sri Lanka.
         </p>
 
         {/* Unified Search Box */}
@@ -138,11 +140,15 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
               </div>
             </div>
 
-            <button type="submit" className="flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-8 py-3 text-sm font-semibold text-white shadow-md hover:bg-brand-600 transition-all hover:shadow-lg hover:-translate-y-0.5 sm:w-auto">
+            <button type="submit" className="flex items-center justify-center gap-2 rounded-xl bg-gold-500 px-8 py-3 text-sm font-semibold text-brand-950 shadow-md hover:bg-gold-400 transition-all hover:shadow-lg hover:-translate-y-0.5 sm:w-auto">
               Search
             </button>
           </form>
         </div>
+      </div>
+
+      <div className="absolute bottom-0 left-0 w-full z-10">
+        <MarketplaceHighlights />
       </div>
     </section>
   );
