@@ -24,7 +24,7 @@ export function useTrafficTracker() {
     }
 
     // Send tracking request in background
-    fetch('http://localhost:5000/api/analytics/track', {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/analytics/track`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
