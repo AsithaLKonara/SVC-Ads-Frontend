@@ -35,6 +35,14 @@ export function generateSeoMetadata({
     description: finalDescription,
     keywords: finalKeywords,
     metadataBase: new URL(siteConfig.url),
+    icons: {
+      icon: [
+        { url: "/logo.JPG", type: "image/jpeg" },
+        { url: "/favicon.ico" },
+      ],
+      shortcut: "/logo.JPG",
+      apple: "/logo.JPG",
+    },
     alternates: {
       canonical: finalUrl,
     },
