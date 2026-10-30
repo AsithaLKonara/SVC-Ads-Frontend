@@ -33,19 +33,21 @@ export default function MarketplaceHighlights() {
   ];
 
   return (
-    <div className="w-full bg-black/20 backdrop-blur-md border-t border-white/10 py-8">
+    <div className="w-full bg-black/30 backdrop-blur-md border-t border-white/10 py-5 sm:py-7">
       <div className="page-container">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {highlights.map((item, index) => (
-            <div key={index} className="flex items-center gap-5">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/10 text-gold-400 shadow-inner">
-                {item.icon}
+            <div key={index} className="flex items-center gap-3.5 sm:gap-4 lg:gap-5">
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 lg:h-14 lg:w-14 shrink-0 items-center justify-center rounded-full bg-white/10 text-gold-400 shadow-inner">
+                <span className="[&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6">
+                  {item.icon}
+                </span>
               </div>
               <div>
-                <h3 className="font-heading text-lg font-bold text-white drop-shadow-md">
+                <h3 className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white drop-shadow-md">
                   {item.title}
                 </h3>
-                <p className="text-sm font-medium text-white/80">
+                <p className="text-xs sm:text-sm font-medium text-white/80">
                   {item.description}
                 </p>
               </div>

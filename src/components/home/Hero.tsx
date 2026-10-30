@@ -45,7 +45,7 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
   };
 
   return (
-    <section className="relative flex min-h-[600px] w-full flex-col items-center justify-center overflow-hidden -mt-20 pt-[176px] pb-40 md:pb-48 md:min-h-[700px]">
+    <section className="relative flex min-h-[600px] sm:min-h-[680px] lg:min-h-[760px] w-full flex-col justify-between overflow-hidden -mt-20 pt-28 sm:pt-36 md:pt-44">
       {/* Background Image Carousel */}
       <div className="absolute inset-0 z-0 bg-gray-900">
         {heroImages.map((src, index) => (
@@ -64,21 +64,21 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
         <div className="absolute inset-0 bg-black/60" />
       </div>
 
-      <div className="container relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 text-center sm:px-6 lg:px-8">
-        <span className="mb-4 inline-flex tracking-widest uppercase text-gold-500 font-semibold text-xs sm:text-sm">
+      <div className="container relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 text-center sm:px-6 lg:px-8 my-auto">
+        <span className="mb-3 sm:mb-4 inline-flex tracking-widest uppercase text-gold-500 font-semibold text-xs sm:text-sm">
           Find your place in Sri Lanka
         </span>
-        <h1 className="mb-6 font-heading text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+        <h1 className="mb-4 sm:mb-6 font-heading text-3xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
           Your Property. <br className="hidden sm:inline" />
           <span className="text-gold-400">Your Future.</span>
         </h1>
-        <p className="mb-10 max-w-2xl text-lg text-white drop-shadow-md sm:text-xl font-medium tracking-wide">
+        <p className="mb-8 sm:mb-10 max-w-2xl text-base sm:text-xl text-white drop-shadow-md font-medium tracking-wide">
           Discover land, homes and investment opportunities across Sri Lanka.
         </p>
 
         {/* Unified Search Box */}
         <div className="w-full max-w-4xl">
-          <form onSubmit={handleSearch} className="flex w-full flex-col gap-2 rounded-2xl bg-card p-2 shadow-2xl sm:flex-row sm:items-center animate-in slide-in-from-bottom-8 duration-700 delay-300">
+          <form onSubmit={handleSearch} className="flex w-full flex-col gap-2 rounded-2xl bg-card p-2.5 sm:p-2 shadow-2xl sm:flex-row sm:items-center animate-in slide-in-from-bottom-8 duration-700 delay-300">
             {/* Search Input */}
             <div className="relative flex-1 group">
               <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-foreground/40 group-focus-within:text-brand-500 transition-colors">
@@ -95,6 +95,7 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
             </div>
 
             <div className="hidden h-8 w-px bg-border sm:block" />
+            <div className="h-px w-full bg-border/40 sm:hidden" />
 
             {/* Category Selector */}
             <div className="relative flex-1 group">
@@ -118,6 +119,7 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
             </div>
 
             <div className="hidden h-8 w-px bg-border sm:block" />
+            <div className="h-px w-full bg-border/40 sm:hidden" />
 
             {/* Location Selector */}
             <div className="relative flex-1 group">
@@ -140,14 +142,14 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
               </div>
             </div>
 
-            <button type="submit" className="flex items-center justify-center gap-2 rounded-xl bg-gold-500 px-8 py-3 text-sm font-semibold text-brand-950 shadow-md hover:bg-gold-400 transition-all hover:shadow-lg hover:-translate-y-0.5 sm:w-auto">
+            <button type="submit" className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-gold-500 px-8 py-3 text-sm font-semibold text-brand-950 shadow-md hover:bg-gold-400 transition-all hover:shadow-lg hover:-translate-y-0.5">
               Search
             </button>
           </form>
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full z-10">
+      <div className="relative z-10 w-full mt-10 sm:mt-14 lg:mt-auto">
         <MarketplaceHighlights />
       </div>
     </section>
