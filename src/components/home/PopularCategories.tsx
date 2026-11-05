@@ -75,7 +75,7 @@ export default async function PopularCategories() {
             </h2>
           </div>
           <Link
-            href="/categories"
+            href="/ads"
             className="group inline-flex items-center gap-1 font-medium text-gold-500 hover:text-gold-400 transition-colors"
           >
             View all categories

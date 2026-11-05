@@ -7,25 +7,25 @@ export default function FeaturedAdsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900">
-            Advertisement Management
+            Featured Properties
           </h1>
           <p className="text-sm text-slate-500">
-            View, approve, and manage all advertisements across the platform.
+            View, approve, and manage featured property listings across the platform.
           </p>
         </div>
         <button className="inline-flex items-center gap-2 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 transition-colors">
           <Plus size={16} />
-          Post New Ad
+          Post New Property
         </button>
       </div>
 
       <div className="border-b border-slate-200">
         <nav className="-mb-px flex space-x-8">
           <a href="/dashboard/ads" className="whitespace-nowrap border-b-2 border-transparent px-1 py-4 text-sm font-medium text-slate-500 hover:border-slate-300 hover:text-slate-700">
-            All Ads
+            All Properties
           </a>
           <a href="/dashboard/ads/featured" className="whitespace-nowrap border-b-2 border-brand-500 px-1 py-4 text-sm font-medium text-brand-600">
-            Featured Ads
+            Featured Properties
           </a>
         </nav>
       </div>
@@ -47,7 +47,7 @@ export default function FeaturedAdsPage() {
           </div>
           <input 
             type="text" 
-            placeholder="Search featured ads..." 
+            placeholder="Search featured properties..." 
             className="block w-full sm:w-64 rounded-md border border-slate-300 bg-white py-1.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
@@ -59,7 +59,7 @@ export default function FeaturedAdsPage() {
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500 border-b border-slate-200">
               <tr>
-                <th scope="col" className="px-6 py-3 font-medium">Ad Details</th>
+                <th scope="col" className="px-6 py-3 font-medium">Property Details</th>
                 <th scope="col" className="px-6 py-3 font-medium">Category</th>
                 <th scope="col" className="px-6 py-3 font-medium">Price</th>
                 <th scope="col" className="px-6 py-3 font-medium">Status</th>

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { isVideoUrl } from "@/utils/media";
+import { Play } from "lucide-react";
 
 interface AdCardProps {
   id: string;
@@ -28,6 +30,7 @@ export default function AdCard({
   viewMode = "grid",
 }: AdCardProps) {
   const isList = viewMode === "list";
+  const isVideo = isVideoUrl(image);
   
   const linkHref = slug ? `/ad/${slug}` : `/ad/${id}`;
   
@@ -36,12 +39,26 @@ export default function AdCard({
       <div className={`relative flex overflow-hidden rounded-2xl bg-card shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-premium-hover border border-border/50 ${isList ? "flex-col sm:flex-row h-auto sm:h-48" : "flex-col h-full"}`}>
         {/* Image Container */}
         <div className={`relative overflow-hidden bg-gray-100 shrink-0 ${isList ? "w-full aspect-[4/3] sm:w-64 sm:aspect-auto sm:h-full" : "w-full aspect-[4/3]"}`}>
-          <Image
-            src={image}
-            alt={title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          {isVideo ? (
+            <div className="relative h-full w-full bg-slate-900 flex items-center justify-center">
+              <video src={image} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow">
+                  <Play size={14} className="ml-0.5 fill-current" />
+                </div>
+              </div>
+              <span className="absolute bottom-2 left-2 bg-black/70 text-[9px] font-bold text-white px-1.5 py-0.5 rounded tracking-wider">
+                VIDEO
+              </span>
+            </div>
+          ) : (
+            <Image
+              src={image}
+              alt={title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          )}
           {isFeatured && (
             <div className="absolute left-3 top-3 rounded-md bg-gold-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-950 shadow-sm">
               Featured
@@ -56,8 +73,8 @@ export default function AdCard({
         {/* Content Container */}
         <div className={`flex flex-1 flex-col ${isList ? "p-4 sm:p-5" : "p-4"}`}>
           <div className="mb-1 flex items-center gap-2">
-            {condition && (
-              <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
+            {condition && condition !== "Used" && (
+              <span className="rounded bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-700 border border-brand-100">
                 {condition}
               </span>
             )}

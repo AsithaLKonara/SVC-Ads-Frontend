@@ -134,7 +134,7 @@ export default function Hero({ categories = [] }: { categories?: Category[] }) {
               >
                 <option value="" className="bg-background">Entire Sri Lanka</option>
                 {districts.map(dist => (
-                  <option key={dist} value={dist.toLowerCase()} className="bg-background">{dist}</option>
+                  <option key={dist} value={dist} className="bg-background">{dist}</option>
                 ))}
               </select>
               <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-foreground/50">

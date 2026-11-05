@@ -390,7 +390,7 @@ export default function CategorySidepanel({
                 <input
                   type="text"
                   disabled={mode === "view" || isSubmitting}
-                  placeholder="e.g. vehicles-cars"
+                  placeholder="e.g. commercial-lands"
                   {...register("slug")}
                   className={`block w-full rounded-md border ${errors.slug ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-brand-500'} px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 disabled:bg-slate-50 disabled:text-slate-500`}
                 />
@@ -536,7 +536,7 @@ export default function CategorySidepanel({
                         </div>
                         <div className="col-span-4">
                            <input 
-                             placeholder="Field Name (e.g. Mileage)" 
+                             placeholder="Field Name (e.g. Land Size, Deed Type, Road Width)" 
                              {...register(`attributes.${index}.name` as const)}
                              className="block w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                            />

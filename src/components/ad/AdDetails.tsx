@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { transformDescriptionToHtml } from "@/utils/richText";
 
 export interface AdData {
   id: string;
@@ -12,6 +13,11 @@ export interface AdData {
 }
 
 export default function AdDetails({ data }: { data: AdData }) {
+  const formattedDescription = useMemo(
+    () => transformDescriptionToHtml(data.description),
+    [data.description]
+  );
+
   return (
     <div className="flex flex-col gap-8">
       {/* Key Attributes */}
@@ -32,13 +38,10 @@ export default function AdDetails({ data }: { data: AdData }) {
       {/* Description */}
       <div>
         <h2 className="mb-4 font-heading text-lg font-bold text-foreground">Description</h2>
-        <div className="prose prose-sm max-w-none text-foreground/80 dark:prose-invert">
-          {data.description.split('\\n').map((paragraph, idx) => (
-            <p key={idx} className="mb-4">
-              {paragraph}
-            </p>
-          ))}
-        </div>
+        <div 
+          className="prose prose-sm sm:prose-base max-w-none text-foreground/90 dark:prose-invert prose-headings:font-heading prose-headings:text-foreground prose-a:text-brand-600 hover:prose-a:underline prose-ul:list-disc prose-ol:list-decimal prose-blockquote:border-l-brand-500 prose-blockquote:bg-muted/40 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg"
+          dangerouslySetInnerHTML={{ __html: formattedDescription }}
+        />
       </div>
     </div>
   );

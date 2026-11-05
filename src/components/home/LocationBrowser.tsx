@@ -68,7 +68,7 @@ export default async function LocationBrowser() {
           {locationStats.map((loc, index) => (
             <Link
               key={loc.district}
-              href={`/ads?location=${loc.district.toLowerCase()}`}
+              href={`/ads?district=${encodeURIComponent(loc.district)}`}
               className={`group flex flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-gold-300 hover:shadow-md ${getGridClasses(index, locationStats.length)}`}
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-100">

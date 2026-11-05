@@ -35,6 +35,9 @@ export default async function AdsPage({
     const filterParams: Record<string, string | string[]> = { status: 'ACTIVE' };
     
     // Copy all valid params
+    if (params.location && !params.district) {
+      filterParams.district = params.location as string;
+    }
     const validKeys = ['category', 'district', 'city', 'minPrice', 'maxPrice', 'condition', 'q', 'sort', 'page', 'limit'];
     for (const key of validKeys) {
       if (params[key] !== undefined) {

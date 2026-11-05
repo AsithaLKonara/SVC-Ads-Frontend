@@ -59,13 +59,13 @@ export default function AdsPage() {
   }, [debouncedSearchQuery]);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this ad?")) return;
+    if (!window.confirm("Are you sure you want to delete this property listing?")) return;
     
     try {
       await adService.deleteAd(id);
       fetchAds(debouncedSearchQuery);
     } catch (error: any) {
-      alert(error.message || "Failed to delete ad");
+      alert(error.message || "Failed to delete property");
     }
   };
 
@@ -98,10 +98,10 @@ export default function AdsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900">
-            Advertisements
+            Property Listings
           </h1>
           <p className="text-sm text-slate-500">
-            Manage all user and staff posted advertisements on the platform.
+            Manage all lands and property listings on the platform.
           </p>
         </div>
         <button 
@@ -109,7 +109,7 @@ export default function AdsPage() {
           className="inline-flex items-center gap-2 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 transition-colors"
         >
           <Plus size={16} />
-          Post New Ad
+          Post New Property
         </button>
       </div>
 
@@ -120,7 +120,7 @@ export default function AdsPage() {
           </div>
           <input 
             type="text" 
-            placeholder="Search all ads..." 
+            placeholder="Search all properties..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="block w-full sm:w-64 rounded-md border border-slate-300 bg-white py-1.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
@@ -134,7 +134,7 @@ export default function AdsPage() {
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500 border-b border-slate-200">
               <tr>
-                <th scope="col" className="px-6 py-3 font-medium">Ad Title & Location</th>
+                <th scope="col" className="px-6 py-3 font-medium">Property Title & Location</th>
                 <th scope="col" className="px-6 py-3 font-medium">Category</th>
                 <th scope="col" className="px-6 py-3 font-medium">Price</th>
                 <th scope="col" className="px-6 py-3 font-medium">Status</th>
@@ -146,13 +146,13 @@ export default function AdsPage() {
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
                     <Loader2 className="mx-auto h-6 w-6 animate-spin text-brand-500" />
-                    <p className="mt-2">Loading advertisements...</p>
+                    <p className="mt-2">Loading properties...</p>
                   </td>
                 </tr>
               ) : filteredAds.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                    No advertisements found.
+                    No properties found.
                   </td>
                 </tr>
               ) : (

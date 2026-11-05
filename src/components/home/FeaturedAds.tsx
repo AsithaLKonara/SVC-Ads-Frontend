@@ -2,6 +2,7 @@ import Link from "next/link";
 import React from "react";
 import AdCard from "../ui/AdCard";
 import { adService, Ad } from "@/services/adService";
+import { getFirstImageThumbnail } from "@/utils/media";
 
 export default async function FeaturedAds() {
   let ads: Ad[] = [];
@@ -22,9 +23,9 @@ export default async function FeaturedAds() {
       title: ad.title,
       price: ad.price.toLocaleString('en-US'),
       location: `${ad.city}, ${ad.district}`,
-      image: ad.images && ad.images.length > 0 ? ad.images[0] : '/images/placeholder.jpg',
+      image: getFirstImageThumbnail(ad.images),
       postedTime,
-      condition: ad.condition || 'Used',
+      condition: ad.condition || undefined,
       isFeatured: ad.isFeatured
     };
   });

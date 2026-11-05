@@ -3,6 +3,7 @@ import AdCard from "@/components/ui/AdCard";
 import Link from "next/link";
 import { adService } from "@/services/adService";
 import { getRelativeTime } from "@/utils/format";
+import { getFirstImageThumbnail } from "@/utils/media";
 
 export default async function RelatedAds({ 
   categorySlug, 
@@ -38,9 +39,9 @@ export default async function RelatedAds({
       title: ad.title,
       price: ad.price.toLocaleString('en-US'),
       location: `${ad.city}, ${ad.district}`,
-      image: ad.images && ad.images.length > 0 ? ad.images[0] : '/images/placeholder.jpg',
+      image: getFirstImageThumbnail(ad.images),
       postedTime,
-      condition: ad.condition || 'Used',
+      condition: ad.condition || undefined,
       isFeatured: ad.isFeatured
     };
   });

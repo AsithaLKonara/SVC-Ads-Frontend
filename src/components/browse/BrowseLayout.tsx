@@ -5,30 +5,53 @@ import FilterSidebar from "@/components/browse/FilterSidebar";
 import AdCard from "@/components/ui/AdCard";
 import Link from "next/link";
 import { Category } from "@/services/categoryService";
-
 import { Ad, PaginatedAds } from "@/services/adService";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { getFirstImageThumbnail } from "@/utils/media";
 
-// Dictionary for Dynamic Category Content
+// Real Estate Dynamic Category Content & FAQs
 const CATEGORY_DATA: Record<string, { desc: string; subcategories: string[]; seoContent: { text: string; faqs: { q: string; a: string }[] } }> = {
-  vehicles: {
-    desc: "Find the best deals on cars, motorbikes, and vans in Sri Lanka.",
-    subcategories: ["Cars", "Motorbikes", "Vans", "Three Wheelers", "Bicycles", "Heavy Duty"],
+  lands: {
+    desc: "Discover commercially valuable lands, residential plots, and agricultural estates across Sri Lanka.",
+    subcategories: ["Commercial Lands", "Residential Lands", "Agricultural Lands", "Beachfront Lands", "Industrial Plots", "Plantations"],
     seoContent: {
-      text: "Sri Lanka's premier vehicle marketplace. Whether you're looking for a fuel-efficient hybrid for the city commute or a robust 4x4, our extensive listings connect you directly with sellers across the island.",
+      text: "Sri Lanka's premier real estate platform connecting property owners, buyers, and investors with prime commercial and residential lands. Every listing features verified location details, road access, and clear deeds.",
       faqs: [
-        { q: "What should I check before buying a used car?", a: "Always check the vehicle's registration book (CR), service history, and have it inspected by a certified mechanic before finalizing." },
-        { q: "Can I filter vehicles by mileage?", a: "Yes, use the advanced filters in the sidebar to narrow down options by mileage, year, and condition." }
+        { q: "What legal documents should I check before purchasing land in Sri Lanka?", a: "Ensure you verify the title deed (Sinnakkara or Bim Saviya), extracts of title from the Land Registry for the past 30 years, street line certificates, and approved survey plan." },
+        { q: "Can I filter lands by district and perch price?", a: "Yes, use the advanced filters in the sidebar to narrow down options by district, price range, and land status." }
       ]
     }
   },
-  electronics: {
-    desc: "Buy and sell mobile phones, laptops, and home appliances instantly.",
-    subcategories: ["Mobile Phones", "Laptops", "Cameras", "TVs", "Audio", "Home Appliances"],
+  properties: {
+    desc: "Explore luxury houses, residential villas, and modern homes for sale across Sri Lanka.",
+    subcategories: ["Houses", "Villas", "Bungalows", "Apartments", "Luxury Homes", "Colonial Properties"],
     seoContent: {
-      text: "Discover the latest gadgets and electronics. From brand new smartphones to gently used gaming consoles, find verified sellers near your location.",
+      text: "Find your dream home with Lakland Realty. Browse through extensive listings of houses, architectural villas, and residential developments in Colombo, Kandy, Galle, and across the island.",
       faqs: [
-        { q: "Is it safe to buy used electronics online?", a: "We recommend thoroughly testing devices in person during the meetup before handing over payment." }
+        { q: "How do I schedule a property inspection or site visit?", a: "You can contact the property owner or Lakland Realty agent directly through the phone number or inquiry form on the listing page." },
+        { q: "What should I look for during a property viewing?", a: "Check structural integrity, water and electricity connections, deed validity, neighborhood infrastructure, and access road width." }
+      ]
+    }
+  },
+  commercial: {
+    desc: "Prime commercial buildings, office spaces, warehouses, and retail outlets for sale and lease.",
+    subcategories: ["Commercial Buildings", "Office Spaces", "Retail & Shops", "Warehouses & Storage", "Hotels & Resorts", "Factories"],
+    seoContent: {
+      text: "Expand your business with prime commercial real estate in high-growth commercial hubs across Sri Lanka. High-visibility locations with exceptional ROI.",
+      faqs: [
+        { q: "Are commercial properties suitable for foreign investment?", a: "Yes, foreign investors can purchase freehold condominiums above the 4th floor or lease commercial lands in accordance with Sri Lankan investment laws and BOI guidelines." },
+        { q: "How can I evaluate commercial real estate yields?", a: "Evaluate rental yield, footfall, road frontage, zoning classification, and capital appreciation potential of the surrounding area." }
+      ]
+    }
+  },
+  rentals: {
+    desc: "Find residential houses, luxury apartments, and commercial spaces available for rent and lease.",
+    subcategories: ["Houses for Rent", "Apartments for Rent", "Commercial Spaces", "Short-term Rentals", "Annexes & Rooms"],
+    seoContent: {
+      text: "Browse verified rental listings across Sri Lanka. Find flexible lease agreements for luxury residences, family homes, and commercial premises.",
+      faqs: [
+        { q: "What are standard rental advance terms in Sri Lanka?", a: "Most landlords request a security deposit equivalent to 3 to 6 months of rent along with monthly rental payments." },
+        { q: "What should be included in a tenancy agreement?", a: "A formal tenancy agreement drafted by an attorney should state the monthly rent, deposit, maintenance responsibilities, utility payments, and notice period." }
       ]
     }
   }
@@ -40,12 +63,12 @@ const getCategoryData = (slug: string) => {
   
   const name = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   return {
-    desc: `Browse the best listings in ${name}. Connect with sellers instantly.`,
-    subcategories: [`All ${name}`, "Top Rated", "Newest", "Budget"],
+    desc: `Browse the best property and land listings in ${name}. Connect with verified sellers and investors instantly.`,
+    subcategories: [`All ${name}`, "Top Rated", "Newest", "Prime Investment"],
     seoContent: {
-      text: `Looking for ${name}? You're in the right place. Browse thousands of verified listings spanning across Sri Lanka.`,
+      text: `Looking for ${name}? You're in the right place. Browse verified property listings spanning across Sri Lanka.`,
       faqs: [
-        { q: `How do I post an ad in ${name}?`, a: "Click the 'Post an Ad' button in the top right corner and select this category during the creation process." }
+        { q: `How do I list a property in ${name}?`, a: "Click the 'Post Your Property' button or contact Lakland Realty to have your property featured to thousands of qualified buyers." }
       ]
     }
   };
@@ -60,12 +83,20 @@ interface BrowseLayoutProps {
   locations?: string[];
 }
 
-export default function BrowseLayout({ category, subcategory, searchQuery, categories = [], initialData, locations = [] }: BrowseLayoutProps) {
+export default function BrowseLayout({ 
+  category, 
+  subcategory, 
+  searchQuery, 
+  categories = [], 
+  initialData, 
+  locations = [] 
+}: BrowseLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [catSearchInput, setCatSearchInput] = useState(searchParams.get('q') || '');
 
   // Format the title correctly
   const formatTitle = (str?: string) => {
@@ -76,13 +107,13 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
   const formattedCategory = formatTitle(category);
   const formattedSubcategory = formatTitle(subcategory);
   
-  let pageTitle = "All Ads";
+  let pageTitle = "All Properties & Lands";
   if (searchQuery) {
     pageTitle = `Search: "${searchQuery}"`;
   } else if (formattedSubcategory) {
     pageTitle = `${formattedSubcategory} in ${formattedCategory}`;
   } else if (formattedCategory) {
-    pageTitle = `${formattedCategory} Ads`;
+    pageTitle = `${formattedCategory} Listings`;
   }
   
   const catData = category ? getCategoryData(category.toLowerCase()) : null;
@@ -98,12 +129,24 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
       title: ad.title,
       price: ad.price.toLocaleString('en-US'),
       location: `${ad.city}, ${ad.district}`,
-      image: ad.images && ad.images.length > 0 ? ad.images[0] : '/images/placeholder.jpg',
+      image: getFirstImageThumbnail(ad.images),
       postedTime,
-      condition: ad.condition || 'Used',
+      condition: ad.condition || undefined,
       isFeatured: ad.isFeatured
     };
   });
+
+  const handleCategorySearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    if (catSearchInput.trim()) {
+      params.set('q', catSearchInput.trim());
+    } else {
+      params.delete('q');
+    }
+    params.delete('page');
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -116,25 +159,26 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
             {category ? (
               <>
                 <span className="mx-2">/</span>
-                <Link href={`/${category}`} className={`hover:text-brand-500 transition-colors ${!subcategory ? "text-foreground" : ""}`}>
+                <Link href={`/${category}`} className={`hover:text-brand-500 transition-colors ${!subcategory ? "text-foreground font-semibold" : ""}`}>
                   {formattedCategory}
                 </Link>
                 {subcategory && (
                   <>
                     <span className="mx-2">/</span>
-                    <span className="text-foreground">{formattedSubcategory}</span>
+                    <span className="text-foreground font-semibold">{formattedSubcategory}</span>
                   </>
                 )}
               </>
             ) : (
               <>
                 <span className="mx-2">/</span>
-                <span className="text-foreground">All Ads</span>
+                <span className="text-foreground font-semibold">All Properties</span>
               </>
             )}
           </nav>
           
           <button 
+            type="button"
             className="ml-4 shrink-0 flex items-center gap-2 rounded-lg bg-card border border-border px-3 py-1.5 text-sm font-semibold text-foreground hover:bg-card/80 lg:hidden transition-colors"
             onClick={() => setIsMobileFiltersOpen(true)}
           >
@@ -157,38 +201,50 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
                 <p className="mb-6 text-lg text-foreground/70">{catData.desc}</p>
                 
                 {/* Search within Category */}
-                <div className="flex max-w-xl items-center rounded-xl border border-border bg-background p-1.5 shadow-sm focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition-all">
+                <form onSubmit={handleCategorySearchSubmit} className="flex max-w-xl items-center rounded-xl border border-border bg-background p-1.5 shadow-sm focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition-all">
                   <div className="pl-3 pr-2 text-foreground/40">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                   </div>
                   <input 
                     type="text" 
+                    value={catSearchInput}
+                    onChange={(e) => setCatSearchInput(e.target.value)}
                     placeholder={`Search within ${formattedCategory}...`}
-                    className="w-full bg-transparent px-2 py-2.5 text-sm outline-none text-foreground placeholder:text-foreground/40"
+                    className="w-full bg-transparent px-2 py-2 text-sm outline-none text-foreground placeholder:text-foreground/40"
                   />
-                  <button className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-brand-600 transition-colors">
+                  <button type="submit" className="rounded-lg bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-brand-600 transition-colors">
                     Search
                   </button>
-                </div>
+                </form>
               </div>
 
               {/* Subcategories Strip */}
               {!subcategory && (
                 <div>
-                  <h3 className="mb-3 font-heading text-sm font-bold uppercase tracking-wider text-foreground/50">Explore Subcategories</h3>
-                  <div className="flex flex-wrap gap-3">
-                    {categories.find(c => c.slug === category)?.children?.map(sub => (
-                      <Link 
-                        key={sub.id} 
-                        href={`/${category}/${sub.slug}`}
-                        className="rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:border-brand-500 hover:text-brand-500 transition-colors shadow-sm"
-                      >
-                        {sub.name}
-                      </Link>
-                    ))}
-                    {(!categories.find(c => c.slug === category)?.children || categories.find(c => c.slug === category)?.children?.length === 0) && (
-                      <span className="text-sm text-foreground/50">No subcategories available.</span>
-                    )}
+                  <h3 className="mb-3 font-heading text-xs font-bold uppercase tracking-wider text-foreground/50">Explore Subcategories</h3>
+                  <div className="flex flex-wrap gap-2.5">
+                    {(() => {
+                      const matchedCat = categories.find(c => c.slug === category);
+                      if (matchedCat && matchedCat.children && matchedCat.children.length > 0) {
+                        return matchedCat.children.map(sub => (
+                          <Link 
+                            key={sub.id} 
+                            href={`/${category}/${sub.slug}`}
+                            className="rounded-full border border-border bg-background px-4 py-1.5 text-xs font-medium text-foreground hover:border-brand-500 hover:text-brand-500 transition-colors shadow-xs"
+                          >
+                            {sub.name}
+                          </Link>
+                        ));
+                      }
+                      return catData.subcategories.map(subName => (
+                        <span 
+                          key={subName} 
+                          className="rounded-full border border-border/80 bg-background/80 px-3.5 py-1 text-xs font-medium text-foreground/70"
+                        >
+                          {subName}
+                        </span>
+                      ));
+                    })()}
                   </div>
                 </div>
               )}
@@ -229,7 +285,7 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-2">
                 <div>
                   <h1 className="font-heading text-2xl font-bold text-foreground">{pageTitle}</h1>
-                  <p className="text-sm text-foreground/60">Showing {mappedAds.length} results</p>
+                  <p className="text-sm text-foreground/60">Showing {mappedAds.length} properties</p>
                 </div>
                 <SortAndToggle viewMode={viewMode} setViewMode={setViewMode} isSearch={!!searchQuery} />
               </div>
@@ -238,7 +294,7 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
             {/* In Category mode, just show a minimal header since H1 is in Hero */}
             {category && (
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-2">
-                <p className="text-sm font-semibold text-foreground/60">Showing {mappedAds.length} results</p>
+                <p className="text-sm font-semibold text-foreground/60">Showing {mappedAds.length} properties</p>
                 <SortAndToggle viewMode={viewMode} setViewMode={setViewMode} isSearch={!!searchQuery} />
               </div>
             )}
@@ -255,8 +311,32 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
                 <div className="mb-4 rounded-full bg-card p-4 shadow-sm">
                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground/40"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
-                <h3 className="font-heading text-lg font-bold text-foreground">No ads found</h3>
-                <p className="mt-2 max-w-md text-sm text-foreground/60">We couldn't find any ads matching your current filters. Try broadening your search criteria.</p>
+                <h3 className="font-heading text-lg font-bold text-foreground">No properties found</h3>
+                <p className="mt-2 max-w-md text-sm text-foreground/60">We couldn't find any properties matching your current filters. Try adjusting your price range, district, or property status.</p>
+              </div>
+            )}
+
+            {/* Category SEO Content & Real Estate FAQs */}
+            {catData && catData.seoContent && (
+              <div className="mt-16 rounded-2xl border border-border/70 bg-card p-6 sm:p-8 space-y-6">
+                <div>
+                  <h2 className="font-heading text-xl font-bold text-foreground mb-3">About {formattedCategory} in Sri Lanka</h2>
+                  <p className="text-sm text-foreground/75 leading-relaxed">{catData.seoContent.text}</p>
+                </div>
+
+                {catData.seoContent.faqs && catData.seoContent.faqs.length > 0 && (
+                  <div className="border-t border-border/50 pt-6">
+                    <h3 className="font-heading text-base font-bold text-foreground mb-4">Frequently Asked Questions</h3>
+                    <div className="space-y-4">
+                      {catData.seoContent.faqs.map((faq, idx) => (
+                        <div key={idx} className="rounded-xl bg-background/60 p-4 border border-border/50">
+                          <h4 className="font-semibold text-sm text-foreground mb-1.5">{faq.q}</h4>
+                          <p className="text-xs sm:text-sm text-foreground/70 leading-relaxed">{faq.a}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -271,13 +351,13 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
                   }}
                   disabled={initialData.page <= 1}
                   className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground/50 hover:bg-background transition-colors disabled:opacity-50"
+                  aria-label="Previous page"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                 </button>
                 
                 {Array.from({ length: initialData.totalPages }).map((_, i) => {
                   const pageNum = i + 1;
-                  // Show current page, first, last, and pages around current
                   if (pageNum === 1 || pageNum === initialData.totalPages || (pageNum >= initialData.page - 1 && pageNum <= initialData.page + 1)) {
                     return (
                       <button 
@@ -310,6 +390,7 @@ export default function BrowseLayout({ category, subcategory, searchQuery, categ
                   }}
                   disabled={initialData.page >= initialData.totalPages}
                   className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground/80 hover:bg-background transition-colors disabled:opacity-50"
+                  aria-label="Next page"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                 </button>
@@ -335,7 +416,6 @@ function SortAndToggle({ viewMode, setViewMode, isSearch }: { viewMode: "grid" |
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('sort', e.target.value);
-    // Reset to page 1 on sort change
     params.set('page', '1');
     router.push(`${pathname}?${params.toString()}`);
   };
@@ -370,6 +450,5 @@ function SortAndToggle({ viewMode, setViewMode, isSearch }: { viewMode: "grid" |
         </button>
       </div>
     </div>
-  )
+  );
 }
-

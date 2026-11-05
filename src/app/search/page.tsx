@@ -34,6 +34,9 @@ export default async function SearchPage({
 
   try {
     const filterParams: Record<string, string | string[]> = { status: 'ACTIVE' };
+    if (params.location && !params.district) {
+      filterParams.district = params.location as string;
+    }
     const validKeys = ['category', 'district', 'city', 'minPrice', 'maxPrice', 'condition', 'q', 'sort', 'page', 'limit'];
     for (const key of validKeys) {
       if (params[key] !== undefined) {

@@ -49,9 +49,11 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: "Buy", path: "/buy" },
-    { name: "Rent", path: "/rent" },
-    { name: "Land", path: "/land" },
+    { name: "All Ads", path: "/ads" },
+    { name: "Lands", path: "/lands" },
+    { name: "Properties", path: "/properties" },
+    { name: "Rentals", path: "/rentals" },
+    { name: "Commercial", path: "/commercial" },
     { name: "How it works", path: "/how-it-works" },
     { name: "Safety", path: "/safety" },
     { name: "Contact", path: "/contact" },
@@ -81,13 +83,13 @@ export default function Navbar() {
         </div>
 
         {/* Center Section: Navigation */}
-        <nav className="hidden md:flex items-center justify-center gap-8 shrink-0" aria-label="Main Navigation">
+        <nav className="hidden md:flex items-center justify-center gap-3.5 lg:gap-5 xl:gap-7 shrink-0" aria-label="Main Navigation">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.path}
-              className={`text-sm font-medium transition-colors ${
-                pathname === link.path ? "text-gold-400" : "text-ivory-50 hover:text-gold-300"
+              className={`text-xs lg:text-sm font-medium transition-colors whitespace-nowrap ${
+                pathname === link.path ? "text-gold-400 font-semibold" : "text-ivory-50 hover:text-gold-300"
               }`}
             >
               {link.name}

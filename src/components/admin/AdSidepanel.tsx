@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Sidepanel from "./Sidepanel";
-import { Loader2 } from "lucide-react";
+import { Loader2, Play, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
 import { z } from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +10,8 @@ import { Category } from "@/services/categoryService";
 import { adService, Ad } from "@/services/adService";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
+import RichTextEditor from "@/components/ui/RichTextEditor";
+import { isVideoUrl } from "@/utils/media";
 
 import { getDistricts, getCitiesByDistrictName } from "sri-lanka-postal-locations";
 
@@ -19,10 +21,14 @@ const districtOptions = getDistricts()
 
 const adSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
+  description: z.string().refine((val) => {
+    if (!val) return false;
+    const stripped = val.replace(/<[^>]*>/g, '').trim();
+    return stripped.length >= 10 || val.includes('<iframe') || val.includes('<img');
+  }, "Description must be at least 10 characters"),
   price: z.number().min(0, "Price must be positive"),
   condition: z.string().optional(),
-  images: z.array(z.string()).max(5, "Maximum 5 images allowed").optional(),
+  images: z.array(z.string()).max(10, "Maximum 10 media files allowed").optional(),
   category: z.object({ value: z.string(), label: z.string(), original: z.any().optional() }).nullable(),
   district: z.object({ value: z.string(), label: z.string() }).nullable(),
   city: z.object({ value: z.string(), label: z.string() }).nullable(),
@@ -64,7 +70,7 @@ export default function AdSidepanel({
   const [apiError, setApiError] = useState<string | null>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
-  const title = mode === "add" ? "Post New Ad" : mode === "edit" ? "Edit Ad" : "Ad Details";
+  const title = mode === "add" ? "Post New Property" : mode === "edit" ? "Edit Property" : "Property Details";
 
   const { control, register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<AdFormData>({
     resolver: zodResolver(adSchema),
@@ -76,8 +82,13 @@ export default function AdSidepanel({
       isFeatured: false,
       contactPhone: "",
       attributes: {},
+      images: [],
     }
   });
+
+  useEffect(() => {
+    setValue("images", imagePreviews);
+  }, [imagePreviews, setValue]);
 
   const selectedDistrict = watch("district");
 
@@ -125,13 +136,24 @@ export default function AdSidepanel({
   useEffect(() => {
     if (isOpen) {
       if (mode === "edit" && ad) {
+        let categoryOption = null;
+        if (ad.categoryId) {
+          const allCategories = categories.flatMap(c => c.children && c.children.length > 0 ? c.children : [c]);
+          const found = allCategories.find(c => c.id === ad.categoryId);
+          if (found) {
+            categoryOption = { value: found.id, label: found.name, original: found };
+          } else if (ad.category) {
+            categoryOption = { value: ad.categoryId, label: ad.category.name, original: ad.category };
+          }
+        }
+
         reset({
           title: ad.title,
           description: ad.description,
           price: ad.price,
           condition: ad.condition || "",
           images: ad.images || [],
-          category: ad.category ? { value: ad.categoryId, label: ad.category.name, original: ad.category } : null,
+          category: categoryOption,
           district: { value: ad.district, label: ad.district },
           city: { value: ad.city, label: ad.city },
           isFeatured: ad.isFeatured,
@@ -161,16 +183,22 @@ export default function AdSidepanel({
     }
   }, [isOpen, mode, ad, reset]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     
-    if (imagePreviews.length + files.length > 5) {
-      alert("Maximum 5 images allowed.");
+    if (imagePreviews.length + files.length > 10) {
+      alert("Maximum 10 media files (images/videos) allowed.");
       return;
     }
 
     Array.from(files).forEach(file => {
+      // Validate file size: 30MB limit
+      if (file.size > 30 * 1024 * 1024) {
+        alert(`File "${file.name}" exceeds 30MB size limit. Please choose a smaller video or embed via YouTube/Vimeo in the description.`);
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
@@ -184,7 +212,7 @@ export default function AdSidepanel({
     e.target.value = '';
   };
 
-  const removeImage = (index: number) => {
+  const removeMedia = (index: number) => {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -273,6 +301,7 @@ export default function AdSidepanel({
               <input
                 type="text"
                 disabled={mode === "view" || isSubmitting}
+                placeholder="e.g. 15 Perches Commercial Land facing Galle Road, Panadura"
                 {...register("title")}
                 className={`block w-full rounded-md border ${errors.title ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-brand-500'} px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 disabled:bg-slate-50 disabled:text-slate-500`}
               />
@@ -304,6 +333,7 @@ export default function AdSidepanel({
                 <input
                   type="number"
                   disabled={mode === "view" || isSubmitting}
+                  placeholder="e.g. 25000000"
                   {...register("price", { valueAsNumber: true })}
                   className={`block w-full rounded-md border ${errors.price ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-brand-500'} px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 disabled:bg-slate-50 disabled:text-slate-500`}
                 />
@@ -311,16 +341,22 @@ export default function AdSidepanel({
               </div>
               
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Condition</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Property / Land Status</label>
                 <select
                   disabled={mode === "view" || isSubmitting}
                   {...register("condition")}
                   className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:bg-slate-50 disabled:text-slate-500"
                 >
-                  <option value="">N/A</option>
-                  <option value="New">New</option>
-                  <option value="Like New">Like New</option>
-                  <option value="Used">Used</option>
+                  <option value="">Select status...</option>
+                  <option value="Bare Land">Bare Land</option>
+                  <option value="Ready to Build">Ready to Build</option>
+                  <option value="Commercial Plot">Commercial Plot</option>
+                  <option value="Agricultural / Estate">Agricultural / Estate</option>
+                  <option value="Brand New">Brand New</option>
+                  <option value="Renovated / Existing">Renovated / Existing</option>
+                  <option value="Fully Furnished">Fully Furnished</option>
+                  <option value="Semi-Furnished">Semi-Furnished</option>
+                  <option value="Under Construction">Under Construction</option>
                 </select>
               </div>
             </div>
@@ -372,48 +408,88 @@ export default function AdSidepanel({
 
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">Description *</label>
-              <textarea
-                disabled={mode === "view" || isSubmitting}
-                rows={4}
-                {...register("description")}
-                className={`block w-full rounded-md border ${errors.description ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-brand-500'} px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 disabled:bg-slate-50 disabled:text-slate-500`}
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                  <RichTextEditor
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    disabled={mode === "view" || isSubmitting}
+                    placeholder="Describe the property or land in detail (e.g., extent, deed status, access roads, amenities)..."
+                  />
+                )}
               />
               {errors.description && <p className="mt-1 text-xs text-red-500">{errors.description.message}</p>}
+              <p className="mt-1 text-xs text-slate-500">
+                Use the toolbar to structure your listing (headings, bullet points) or embed YouTube/Vimeo walk-through videos using the video button.
+              </p>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Images (Max 5)</label>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="block text-sm font-medium text-slate-700">
+                  Photos & Videos ({imagePreviews.length}/10)
+                </label>
+                <span className="text-xs text-slate-400">Images & MP4/WebM supported</span>
+              </div>
               
               <div className="grid grid-cols-5 gap-2 mb-2">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative aspect-square rounded-md overflow-hidden bg-slate-100 border border-slate-200 group">
-                    <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
-                    <button 
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                    </button>
-                  </div>
-                ))}
+                {imagePreviews.map((preview, index) => {
+                  const isVideo = isVideoUrl(preview);
+                  return (
+                    <div key={index} className="relative aspect-square rounded-md overflow-hidden bg-slate-900 border border-slate-200 group">
+                      {isVideo ? (
+                        <div className="relative h-full w-full flex items-center justify-center bg-slate-900">
+                          <video src={preview} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow">
+                              <Play size={10} className="ml-0.5 fill-current" />
+                            </div>
+                          </div>
+                          <span className="absolute bottom-1 left-1 bg-black/70 text-[8px] font-bold text-white px-1 py-0.5 rounded tracking-wide">
+                            VIDEO
+                          </span>
+                        </div>
+                      ) : (
+                        <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                      )}
+                      
+                      {mode !== "view" && (
+                        <button 
+                          type="button"
+                          onClick={() => removeMedia(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          title="Remove media"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
                 
-                {imagePreviews.length < 5 && (
+                {imagePreviews.length < 10 && mode !== "view" && (
                   <label className="aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-50 hover:border-brand-400 hover:text-brand-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    <div className="flex items-center gap-1 mb-1">
+                      <ImageIcon size={14} />
+                      <VideoIcon size={14} />
+                    </div>
                     <span className="text-[10px] font-medium text-center px-1">Upload</span>
                     <input 
                       type="file" 
-                      accept="image/*" 
+                      accept="image/*,video/mp4,video/webm,video/quicktime,video/ogg" 
                       multiple
                       className="hidden" 
-                      onChange={handleImageUpload}
-                      disabled={mode === "view" || isSubmitting}
+                      onChange={handleMediaUpload}
+                      disabled={isSubmitting}
                     />
                   </label>
                 )}
               </div>
-              <p className="text-xs text-slate-500">Currently converting to Base64 (Local DB Storage). Images size will affect payload.</p>
+              <p className="text-xs text-slate-500">
+                You can upload property images and short videos (up to 30MB each).
+              </p>
             </div>
 
             <div>
@@ -522,7 +598,7 @@ export default function AdSidepanel({
               disabled={isSubmitting}
               className="inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50 min-w-[120px]"
             >
-              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : mode === "add" ? "Post Ad" : "Save Changes"}
+              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : mode === "add" ? "Post Property" : "Save Changes"}
             </button>
           </div>
         )}

@@ -54,6 +54,9 @@ export default async function CategoryPage({
   if (isValid) {
     try {
       const filterParams: Record<string, string | string[]> = { category, status: 'ACTIVE' };
+      if (sParams.location && !sParams.district) {
+        filterParams.district = sParams.location as string;
+      }
       const validKeys = ['district', 'city', 'minPrice', 'maxPrice', 'condition', 'q', 'sort', 'page', 'limit'];
       for (const key of validKeys) {
         if (sParams[key] !== undefined) {

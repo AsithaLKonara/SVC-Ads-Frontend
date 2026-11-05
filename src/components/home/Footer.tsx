@@ -71,8 +71,8 @@ export default async function Footer() {
           <div>
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white">Marketplace</h3>
             <ul className="flex flex-col gap-3">
-              <li><Link href="/ads" className="text-sm hover:text-gold-400 transition-colors">Browse Ads</Link></li>
-              <li><Link href="/categories" className="text-sm hover:text-gold-400 transition-colors">All Categories</Link></li>
+              <li><Link href="/ads" className="text-sm hover:text-gold-400 transition-colors">Browse Properties</Link></li>
+              <li><Link href="/ads" className="text-sm hover:text-gold-400 transition-colors">All Categories</Link></li>
               <li className="pt-2 pb-1 text-xs uppercase tracking-wider text-gray-500">Top Categories</li>
               {topCategories.map(cat => (
                 <li key={cat.id}>

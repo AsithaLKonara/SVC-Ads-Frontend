@@ -15,15 +15,19 @@ import { generateRealEstateListingSchema } from "@/lib/seo/structured-data";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Metadata } from "next";
 
+import { getFirstImageThumbnail, isVideoUrl } from "@/utils/media";
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   try {
     const rawAd = await adService.getAd(slug);
+    const plainDescription = (rawAd.description || "").replace(/<[^>]*>/g, "").trim();
+    const thumbnail = getFirstImageThumbnail(rawAd.images);
     return generateSeoMetadata({
       title: rawAd.title,
-      description: rawAd.description.substring(0, 160),
+      description: plainDescription.substring(0, 160) || rawAd.title,
       url: `/ad/${rawAd.slug}`,
-      image: rawAd.images?.[0],
+      image: thumbnail,
       type: "article",
       publishedTime: rawAd.createdAt,
       modifiedTime: rawAd.updatedAt,
@@ -62,8 +66,8 @@ export default async function AdPage({
     views: rawAd.views || 0,
     description: rawAd.description,
     attributes: {
-      Condition: rawAd.condition || "Used",
       Category: rawAd.category?.name || "Uncategorized",
+      ...(rawAd.condition ? { "Property Status": rawAd.condition } : {}),
       ...(typeof rawAd.attributes === 'object' && rawAd.attributes !== null ? rawAd.attributes : {})
     },
     images: rawAd.images && rawAd.images.length > 0 
@@ -82,10 +86,10 @@ export default async function AdPage({
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <JsonLd data={generateRealEstateListingSchema({
         title: rawAd.title,
-        description: rawAd.description,
+        description: (rawAd.description || "").replace(/<[^>]*>/g, ""),
         price: rawAd.price,
         url: `/ad/${rawAd.slug}`,
-        images: ad.images,
+        images: ad.images.filter(img => !isVideoUrl(img)),
         district: rawAd.district,
         city: rawAd.city,
         publishedAt: rawAd.createdAt,
