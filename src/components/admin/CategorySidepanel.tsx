@@ -7,6 +7,7 @@ import { z } from "zod";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { categoryService, Category } from "@/services/categoryService";
+import { uploadMediaFiles } from "@/services/uploadService";
 import CreatableSelect from "react-select/creatable";
 
 const attributeSchema = z.object({
@@ -62,6 +63,7 @@ export default function CategorySidepanel({
 }: CategorySidepanelProps) {
   const [activeTab, setActiveTab] = useState<"details" | "attributes">("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -177,18 +179,30 @@ export default function CategorySidepanel({
     }
   }, [isOpen, mode, category, reset, topLevelCategories]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setImagePreview(reader.result);
-        setValue("image", reader.result);
+
+    if (file.size > 10 * 1024 * 1024) {
+      setApiError(`Image "${file.name}" exceeds the 10MB limit.`);
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setApiError(null);
+
+    try {
+      const uploaded = await uploadMediaFiles([file], "categories");
+      if (uploaded[0]?.url) {
+        setImagePreview(uploaded[0].url);
+        setValue("image", uploaded[0].url);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (error: any) {
+      setApiError(error?.message || "Failed to upload category image.");
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const onSubmit = async (data: CategoryFormData) => {
@@ -462,15 +476,24 @@ export default function CategorySidepanel({
                       </button>
                     </div>
                   ) : (
-                    <label className="flex h-24 w-24 shrink-0 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-slate-300 hover:bg-slate-50 hover:border-brand-400 hover:text-brand-500 transition-colors text-slate-500">
-                      <Plus size={20} className="mb-1" />
-                      <span className="text-[10px] font-medium">Upload</span>
+                    <label className={`flex h-24 w-24 shrink-0 flex-col items-center justify-center rounded-md border-2 border-dashed border-slate-300 transition-colors text-slate-500 ${isUploadingImage ? "opacity-60 cursor-wait bg-slate-50" : "cursor-pointer hover:bg-slate-50 hover:border-brand-400 hover:text-brand-500"}`}>
+                      {isUploadingImage ? (
+                        <>
+                          <Loader2 size={20} className="mb-1 animate-spin text-brand-600" />
+                          <span className="text-[10px] font-medium">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={20} className="mb-1" />
+                          <span className="text-[10px] font-medium">Upload</span>
+                        </>
+                      )}
                       <input 
                         type="file" 
                         accept="image/*" 
                         className="hidden" 
                         onChange={handleImageUpload}
-                        disabled={mode === "view" || isSubmitting}
+                        disabled={mode === "view" || isSubmitting || isUploadingImage}
                       />
                     </label>
                   )}
@@ -652,7 +675,7 @@ export default function CategorySidepanel({
             </button>
             <button 
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingImage}
               className="inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50 min-w-[120px]"
             >
               {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : mode === "add" ? "Save Taxonomy Node" : "Save Changes"}

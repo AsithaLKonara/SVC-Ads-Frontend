@@ -12,6 +12,7 @@ import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import RichTextEditor from "@/components/ui/RichTextEditor";
 import { isVideoUrl } from "@/utils/media";
+import { uploadMediaFiles } from "@/services/uploadService";
 
 import { getDistricts, getCitiesByDistrictName } from "sri-lanka-postal-locations";
 
@@ -67,6 +68,7 @@ export default function AdSidepanel({
   onSuccess 
 }: AdSidepanelProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
@@ -183,33 +185,41 @@ export default function AdSidepanel({
     }
   }, [isOpen, mode, ad, reset]);
 
-  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
-    
-    if (imagePreviews.length + files.length > 10) {
-      alert("Maximum 10 media files (images/videos) allowed.");
+    if (!files || files.length === 0) return;
+
+    const selectedFiles = Array.from(files);
+    e.target.value = '';
+
+    if (imagePreviews.length + selectedFiles.length > 10) {
+      setApiError("Maximum 10 media files (images/videos) allowed.");
       return;
     }
 
-    Array.from(files).forEach(file => {
-      // Validate file size: 30MB limit
+    const validFiles: File[] = [];
+    for (const file of selectedFiles) {
       if (file.size > 30 * 1024 * 1024) {
-        alert(`File "${file.name}" exceeds 30MB size limit. Please choose a smaller video or embed via YouTube/Vimeo in the description.`);
-        return;
+        setApiError(`File "${file.name}" exceeds 30MB size limit. Please choose a smaller video or embed via YouTube/Vimeo in the description.`);
+        continue;
       }
+      validFiles.push(file);
+    }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          setImagePreviews(prev => [...prev, reader.result as string]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-    
-    // Clear input
-    e.target.value = '';
+    if (validFiles.length === 0) return;
+
+    setIsUploadingMedia(true);
+    setApiError(null);
+
+    try {
+      const uploaded = await uploadMediaFiles(validFiles, "ads");
+      const uploadedUrls = uploaded.map((item) => item.url);
+      setImagePreviews((prev) => [...prev, ...uploadedUrls]);
+    } catch (error: any) {
+      setApiError(error?.message || "Failed to upload media files.");
+    } finally {
+      setIsUploadingMedia(false);
+    }
   };
 
   const removeMedia = (index: number) => {
@@ -470,25 +480,34 @@ export default function AdSidepanel({
                 })}
                 
                 {imagePreviews.length < 10 && mode !== "view" && (
-                  <label className="aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-50 hover:border-brand-400 hover:text-brand-500 transition-colors">
-                    <div className="flex items-center gap-1 mb-1">
-                      <ImageIcon size={14} />
-                      <VideoIcon size={14} />
-                    </div>
-                    <span className="text-[10px] font-medium text-center px-1">Upload</span>
+                  <label className={`aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-500 transition-colors ${isUploadingMedia ? "opacity-60 cursor-wait bg-slate-50" : "cursor-pointer hover:bg-slate-50 hover:border-brand-400 hover:text-brand-500"}`}>
+                    {isUploadingMedia ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin text-brand-600 mb-1" />
+                        <span className="text-[10px] font-medium text-center px-1">Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-1 mb-1">
+                          <ImageIcon size={14} />
+                          <VideoIcon size={14} />
+                        </div>
+                        <span className="text-[10px] font-medium text-center px-1">Upload</span>
+                      </>
+                    )}
                     <input 
                       type="file" 
                       accept="image/*,video/mp4,video/webm,video/quicktime,video/ogg" 
                       multiple
                       className="hidden" 
                       onChange={handleMediaUpload}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isUploadingMedia}
                     />
                   </label>
                 )}
               </div>
               <p className="text-xs text-slate-500">
-                You can upload property images and short videos (up to 30MB each).
+                Upload property photos and short videos (up to 30MB each, stored in cloud object storage).
               </p>
             </div>
 
@@ -595,7 +614,7 @@ export default function AdSidepanel({
             </button>
             <button 
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingMedia}
               className="inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50 min-w-[120px]"
             >
               {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : mode === "add" ? "Post Property" : "Save Changes"}
