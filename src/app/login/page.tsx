@@ -20,11 +20,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleDemoLogin = () => {
-    setEmail("admin@laklandreality.com");
-    setPassword("admin123");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -81,7 +76,7 @@ export default function LoginPage() {
           
           <div className="relative z-10 flex h-full flex-col items-center justify-center p-12 text-center">
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-500 text-4xl font-bold text-white shadow-2xl">
-              Y
+              L
             </div>
             <h1 className="mb-4 font-heading text-4xl font-bold text-white">
               Admin Portal
@@ -102,21 +97,6 @@ export default function LoginPage() {
               <p className="mt-2 text-sm text-foreground/70">
                 Please sign in to your admin account.
               </p>
-            </div>
-
-            {/* Demo Credentials Alert */}
-            <div 
-              onClick={handleDemoLogin}
-              className="mt-4 cursor-pointer rounded-xl border border-brand-200 bg-brand-50 p-4 transition-colors hover:bg-brand-100"
-            >
-              <div className="flex items-center gap-3 text-brand-700">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                <div className="text-sm">
-                  <span className="block font-semibold">Demo Admin Credentials</span>
-                  <span className="block opacity-90">Click this box to fill in the form instantly.</span>
-                  <span className="mt-1 block font-mono text-xs opacity-80">admin@laklandreality.com / admin123</span>
-                </div>
-              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-6">
