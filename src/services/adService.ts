@@ -59,8 +59,8 @@ export const adService = {
     return data;
   },
 
-  async getLocationStats(): Promise<{ district: string; count: number }[]> {
-    const res = await fetch(`${API_URL}/ads/locations/stats`);
+  async getLocationStats(options?: RequestInit): Promise<{ district: string; count: number }[]> {
+    const res = await fetch(`${API_URL}/ads/locations/stats`, options);
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to fetch location stats');
     return data;

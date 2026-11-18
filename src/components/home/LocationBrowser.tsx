@@ -6,7 +6,7 @@ export default async function LocationBrowser() {
   let locationStats: { district: string; count: number }[] = [];
   try {
     // Show up to 12 locations
-    locationStats = await adService.getLocationStats();
+    locationStats = await adService.getLocationStats({ cache: 'no-store' });
     locationStats = locationStats.slice(0, 12);
   } catch (error) {
     console.error("Failed to fetch location stats:", error);

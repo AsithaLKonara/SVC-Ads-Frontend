@@ -76,26 +76,16 @@ export const categoryService = {
   }
 };
 
-// Memory cache to prevent Next.js prefetch spam in dev mode
-let categoryCache: { data: Category[]; timestamp: number } | null = null;
-const CACHE_TTL = 60 * 1000; // 60 seconds
-
-// Cached version for Server Components to prevent fetch spam
-export const getCachedCategories = cache(async (): Promise<Category[]> => {
-  const now = Date.now();
-  if (categoryCache && now - categoryCache.timestamp < CACHE_TTL) {
-    return categoryCache.data;
-  }
-
+// Cached version for Server Components (request-deduplicated)
+export const getCachedCategories = cache(async (options?: RequestInit): Promise<Category[]> => {
   try {
-    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
-    if (!res.ok) return categoryCache ? categoryCache.data : [];
+    const res = await fetch(`${API_URL}/categories`, options || { next: { revalidate: 60 } });
+    if (!res.ok) return [];
     
     const data = await res.json();
-    categoryCache = { data, timestamp: now };
-    return data;
+    return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error("Failed to fetch cached categories:", error);
-    return categoryCache ? categoryCache.data : [];
+    return [];
   }
 });

@@ -7,7 +7,7 @@ import { getFirstImageThumbnail } from "@/utils/media";
 export default async function FeaturedAds() {
   let ads: Ad[] = [];
   try {
-    const res = await adService.getAds({ isFeatured: 'true', limit: '3', status: 'ACTIVE' });
+    const res = await adService.getAds({ isFeatured: 'true', limit: '3', status: 'ACTIVE' }, { cache: 'no-store' });
     ads = Array.isArray(res) ? res : (res.data || []);
   } catch (error) {
     console.error("Failed to fetch featured ads:", error);

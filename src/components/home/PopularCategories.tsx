@@ -16,13 +16,15 @@ const DynamicIcon = ({ name, size = 24 }: { name: string | null; size?: number }
   return <IconComponent size={size} />;
 };
 
-export default async function PopularCategories() {
-  let categories: Category[] = [];
+export default async function PopularCategories({ initialCategories }: { initialCategories?: Category[] } = {}) {
+  let categories: Category[] = initialCategories || [];
   
-  try {
-    categories = await getCachedCategories();
-  } catch (error) {
-    console.error("Failed to fetch popular categories", error);
+  if (categories.length === 0) {
+    try {
+      categories = await getCachedCategories();
+    } catch (error) {
+      console.error("Failed to fetch popular categories", error);
+    }
   }
 
   // Show up to 12 categories, allowing the grid to auto-adjust

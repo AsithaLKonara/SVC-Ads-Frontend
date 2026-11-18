@@ -8,7 +8,7 @@ import { getFirstImageThumbnail } from "@/utils/media";
 export default async function LatestAds() {
   let ads: Ad[] = [];
   try {
-    const res = await adService.getAds({ limit: '6', status: 'ACTIVE' });
+    const res = await adService.getAds({ limit: '6', status: 'ACTIVE' }, { cache: 'no-store' });
     // Defensive check to handle both old API (returns array) and new API (returns PaginatedAds) during build transitions
     ads = Array.isArray(res) ? res : (res.data || []);
   } catch (error) {

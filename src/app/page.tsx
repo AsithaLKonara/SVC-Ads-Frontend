@@ -13,11 +13,14 @@ import { Category, getCachedCategories } from "@/services/categoryService";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Home() {
   let categories: Category[] = [];
   
   try {
-    categories = await getCachedCategories();
+    categories = await getCachedCategories({ cache: 'no-store' });
   } catch (error) {
     console.error("Failed to fetch categories for Hero:", error);
   }
@@ -29,7 +32,7 @@ export default async function Home() {
       <Navbar />
       <main className="flex-1">
         <Hero categories={categories} />
-        <PopularCategories />
+        <PopularCategories initialCategories={categories} />
         <FeaturedAds />
         <LatestAds />
         <LocationBrowser />
